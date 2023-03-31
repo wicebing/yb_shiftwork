@@ -1,0 +1,17 @@
+{{ lists }}
+<table border="1">
+  <tr>
+    {% for item in lists %}
+      <td>{{ item }}</td>
+    {% endfor %}
+  </tr>
+</table>
+<br>
+{{ dicts }}
+<table border="1">
+  <tr>
+    {% for key, value in dicts.items %}
+      <td>{{ key }}: {{ value|upper }}</td>
+    {% endfor %}
+  </tr>
+</table>
