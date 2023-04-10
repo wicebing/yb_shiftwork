@@ -14,11 +14,30 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.documentation import include_docs_urls
+from rest_framework.schemas import get_schema_view
+
 from app1 import views
+
+router = DefaultRouter()
+router.register('staff', views.staffViewset)
+router.register('regis', views.UserGenericViewset)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('login/', views.user_login),
     path("index",views.index),
     path("var",views.var),
+    path("reg",views.user_register),
+    path('regist', views.UserGenericView.as_view()),
+    path('regist/<pk>/', views.UserDetailGenericView.as_view()),
+    path('regis', include(router.urls)),
+    path('app1/staff/', views.staffGenericView.as_view()),
+    path('app1/staff/<pk>/', views.staffDetailGenericView.as_view()),
+    path('app1/staffviewset/', include(router.urls)),
+    path('api-jwt-auth/', TokenObtainPairView.as_view()),
+    path('docs/', include_docs_urls(title='My API title')),
 ]
