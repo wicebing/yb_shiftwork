@@ -17,5 +17,12 @@
     "postcss": "^8.4.21",
     "tailwindcss": "^3.3.1",
     "vfonts": "^0.0.3"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^0.4.8",
+    "pinia": "^2.0.34"
+  },
+  "overrides": {
+    "vue": "latest"
   }
 }

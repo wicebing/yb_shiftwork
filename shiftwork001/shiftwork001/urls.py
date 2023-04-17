@@ -22,22 +22,23 @@ from rest_framework.schemas import get_schema_view
 
 from app1 import views
 
-router = DefaultRouter()
-router.register('staff', views.staffViewset)
-router.register('regis', views.UserGenericViewset)
+# router = DefaultRouter()
+# router.register('staff', views.staffViewset)
+# router.register('regis', views.UserGenericViewset)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('login/', views.user_login),
-    path("index",views.index),
-    path("var",views.var),
-    path("reg",views.user_register),
-    path('regist', views.UserGenericView.as_view()),
-    path('regist/<pk>/', views.UserDetailGenericView.as_view()),
-    path('regis', include(router.urls)),
-    path('app1/staff/', views.staffGenericView.as_view()),
-    path('app1/staff/<pk>/', views.staffDetailGenericView.as_view()),
-    path('app1/staffviewset/', include(router.urls)),
-    path('api-jwt-auth/', TokenObtainPairView.as_view()),
+    # path('login/', views.user_login),
+    # path("index",views.index),
+    # path("var",views.var),
+    # path("reg",views.user_register),
+    path('api/regist/', views.UserGenericView.as_view()),
+    path('api/regist/<pk>/', views.UserDetailGenericView.as_view()),
+    path('api/staff/', views.staffGenericView.as_view()),
+    path('api/staff/<pk>/', views.staffDetailGenericView.as_view()),
+    # path('app1/staffviewset/', include(router.urls)),
+    # path('api-jwt-auth/', TokenObtainPairView.as_view()),
     path('docs/', include_docs_urls(title='My API title')),
+    path('token/', views.MyObtainTokenPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

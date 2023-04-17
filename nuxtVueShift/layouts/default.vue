@@ -8,7 +8,7 @@ import { NLayoutFooter, NLayoutHeader,  } from 'naive-ui'
           <nav class="flex items-center justify-between flex-wrap font-mono">
             <NuxtLink to="/" >
                 <span class="box-decoration-clone bg-gradient-to-r from-indigo-600 to-pink-500 text-white px-2 font-bold font-mono text-xl">
-                  Shift¥₿
+                  $hift¥₿
                 </span>
             </NuxtLink>
             <slot name="header"/>

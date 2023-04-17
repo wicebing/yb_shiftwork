@@ -142,7 +142,7 @@ REST_FRAMEWORK = {
     #                                    'rest_framework.authentication.SessionAuthentication', 
     #                                    'rest_framework.authentication.BasicAuthentication'],
     'DEFALUT_AUTHENTICATION_CLASSES': ['rest_framework_simplejwt.authentication.JWTAuthentication'],
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
+    # 'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     
 }
@@ -151,6 +151,13 @@ JWT_AUTH = {
     'JWT_ALLOW_REFRESH': True, 
     'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=6),
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(hours=6),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
 }
 
 AUTHENTICATION_BACKENDS = [
