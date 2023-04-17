@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework import status, mixins, generics, viewsets, permissions
 from rest_framework.decorators import api_view
 from rest_framework.authentication import SessionAuthentication
-
+from rest_framework.decorators import permission_classes, authentication_classes
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -127,4 +127,16 @@ class staffDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
 class MyObtainTokenPairView(TokenObtainPairView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = MyTokenObtainPairSerializer
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+@authentication_classes([JWTAuthentication,SessionAuthentication])
+def get_current_user(request):
+    user = request.user
+    print(request.user.id,request.user.username,request.user.email)
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+    }, status=status.HTTP_200_OK)
 

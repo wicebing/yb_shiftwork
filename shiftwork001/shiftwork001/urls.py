@@ -41,4 +41,5 @@ urlpatterns = [
     path('docs/', include_docs_urls(title='My API title')),
     path('token/', views.MyObtainTokenPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/whoami/', views.get_current_user, name='get_current_user'),
 ]

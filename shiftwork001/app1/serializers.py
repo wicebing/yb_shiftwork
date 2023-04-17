@@ -28,6 +28,13 @@ class User_Serializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+    
+    # username=serializers.CharField(required=True, allow_blank=False, max_length=20,
+    #                                error_messages={
+    #                                    'required': '請輸入帳號',
+    #                                    'blank': '帳號不能為空',
+    #                                    'max_length': '帳號不能超過20個字',
+    #                                    }) 
 
 class Table_staff_Serializer(serializers.ModelSerializer):
     # AUTHid = User_Serializer()

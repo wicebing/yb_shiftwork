@@ -1,44 +1,37 @@
-export const useUserStore = definePiniaStore('useUserStore', {
-    const user = reactive({
-        isAuthenticated: false,
-        email: null,
-        token: null
-    })
+export const useUserStore = definePiniaStore('userStore', ()=>{
+    
+    const isAuthenticated = ref(false)
+    const token = ref('')
 
-    const initStore = () => {
-        user.isAuthenticated = false
-        if (localStorage.getItem('user.token')) {
-            user.isAuthenticated = true
-            user.email = localStorage.getItem('user.email')
-            user.token = localStorage.getItem('user.token')
+    // const initStore = () => {
+    //     isAuthenticated.value = false
+    //     if (localStorage.getItem('user.token')) {
+    //         isAuthenticated.value = true
+    //         token.value = localStorage.getItem('user.token')
 
-            console.log('Initialized user:', user)
-        }
-    }
+    //         console.log('Initialized user:')
+    //     }
+    // }
 
-    const setToken = (token: string, email: string) => {
-        console.log('Setting token:', token, email)
-        user.isAuthenticated = true
-        user.email = email
-        user.token = token
-        localStorage.setItem('user.token', token)
-        localStorage.setItem('user.email', email)
-    }   
+    const setToken = (posttoken: string) => {
+        console.log('Setting token:', posttoken)
+        isAuthenticated.value = true
+        token.value = posttoken
+        // localStorage.setItem('token', posttoken)
+    };
 
     const removeToken = () => {
         console.log('Removing token')
-        user.isAuthenticated = false
-        user.email = null
-        user.token = null
-        localStorage.removeItem('user.token')
-        localStorage.removeItem('user.email')
+        isAuthenticated.value = false
+        token.value = ''
+        // localStorage.removeItem('user.token')
     }
 
     return {
-        user,
-        initStore,
+        isAuthenticated,
+        token,
         setToken,
-        removeToken
+        removeToken, 
     }
 })
     

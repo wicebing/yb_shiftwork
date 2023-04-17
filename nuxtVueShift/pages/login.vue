@@ -2,6 +2,9 @@
 import { NTabPane, NCard, NTabs, NForm, NFormItemRow, NInput, NButton } from 'naive-ui'
 import { NIcon } from 'naive-ui'
 import { GlassesOutline, Glasses } from '@vicons/ionicons5'
+
+import { useUserStore } from '../stores/user.ts'
+
 const staff = reactive({
     name: '',
     password:'',
@@ -9,6 +12,8 @@ const staff = reactive({
 })
 const errors = ref([])
 const repeatPW = ref('')
+
+const useStore = useUserStore()
 
 async function commitSignup () {
     console.log('commitSignup')
@@ -52,32 +57,62 @@ async function commitLogin () {
     console.log('data',data.value)
     console.log('error',error)
 
-    errors.value.push(data.value)
-    if (data){
-        errors.value.push(data.value.access)
-        errors.value.push(data.value.refresh)
+    if (error.value){
+        console.log('error',error.value.data.detail)
+        errors.value.push(error.value)
     }
+    if (data.value){
+        useStore.setToken(data.value.access)
+        console.log('useStore',useStore.token,useStore.$state.isAuthenticated)
+    }
+
 }
 
 async function commitTest () {
     console.log('commitLogin')
     errors.value = []
-    const { data, pending, refresh, error } = await useFetch('/api/regist/', {
+
+    const a = ref('JWT ${useStore.token}')
+    console.log('JWT ' + useStore.token)
+
+    const { data, pending, refresh, error } = await useFetch('/api/staff/', {
         method: 'GET',
         baseURL:'http://localhost:8000',
         headers: {
-            Authorization: 'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgxNzYzNDM2LCJpYXQiOjE2ODE3NDE4MzYsImp0aSI6IjA4MzQwZTRiZTQ3YzQzZDI5OGQ5ODc4MjYwODI3NmE2IiwidXNlcl9pZCI6MTksInVzZXJuYW1lIjoiMTA0MTU4In0.FfdmJkte4_GYQNG_40Rj835RZS2d1wAg42kBwaMO0pI',
+            Authorization: `JWT ${useStore.token}` 
         }
     })
     // const { data } = await useFetch(() => `/api/hello/${count.value}`, { params: { token: 123 } })
     console.log('data',data.value)
     console.log('error',error)
-    console.log('error',error.value)
+    console.log(`JWT ${useStore.token}`)
 
     // errors.value.push(data.value.results)
-    errors.value.push(error.value)
-    errors.value.push(error.value.data.detail)
+    if (error.value){
+        console.log('error',error.value.data.detail)
+        errors.value.push(error.value)
+    }
 }
+
+async function getCurrentUser() {
+    const { data, error } = await useFetch('/api/whoami/', {
+        method: 'GET',
+        baseURL: 'http://localhost:8000',
+        headers: {
+            Authorization: `JWT ${useStore.token}`,
+        },
+    });
+
+    errors.value.push('data',data.value)
+    errors.value.push('error',error.value)
+
+    if (error.value) {
+        console.log('Error:', error.value);
+    } else {
+        console.log('Current user:', data.value);
+    }
+}
+
 
 </script>
 
@@ -123,6 +158,9 @@ async function commitTest () {
                         </n-button>
                         <n-button type="primary" block secondary strong :on-click="commitTest">
                         commitTest
+                        </n-button>
+                        <n-button type="primary" block secondary strong :on-click="getCurrentUser">
+                        getCurrentUser
                         </n-button>
                     </n-form>
                 </n-tab-pane>
