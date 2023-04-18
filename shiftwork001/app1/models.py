@@ -21,7 +21,7 @@ class Table_staff(models.Model):
     NTUHid = models.CharField(max_length=8,verbose_name='NTUH ID')
     name = models.CharField(max_length=100,verbose_name='姓名')
     birthday = models.DateField(verbose_name='生日')
-    AUTHid = models.ForeignKey(User,on_delete=models.CASCADE,verbose_name='人員', null=True)
+    AUTHid = models.OneToOneField(User,on_delete=models.CASCADE,verbose_name='人員', null=True)
 
     def __str__(self):
         return str(self.NTUHid)+self.name

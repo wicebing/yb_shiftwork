@@ -19,8 +19,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from .common.permissions import IsStaff
 from .serializers import MyTokenObtainPairSerializer
-
 from .form import *
 from .serializers import *
 
@@ -129,14 +129,36 @@ class MyObtainTokenPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([IsStaff])
 @authentication_classes([JWTAuthentication,SessionAuthentication])
 def get_current_user(request):
     user = request.user
     print(request.user.id,request.user.username,request.user.email)
-    return Response({
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-    }, status=status.HTTP_200_OK)
+
+    try:
+        table_staff = user.table_staff
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
+            'table_staff': {
+                'id': table_staff.id,
+                'NTUHid': table_staff.NTUHid,
+                'name': table_staff.name,
+                'birthday': table_staff.birthday
+            }
+        }, status=status.HTTP_200_OK)
+    except:
+        table_staff = None
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
+            'table_staff': table_staff
+        }, status=status.HTTP_200_OK)
+
 

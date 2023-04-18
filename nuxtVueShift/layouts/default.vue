@@ -1,5 +1,7 @@
 <script lang='ts' setup>
 import { NLayoutFooter, NLayoutHeader,  } from 'naive-ui'
+// import { useUserStore } from '../composables/user.js'
+const useStore = useUserStore()
 </script>
 
 <template>
@@ -11,6 +13,7 @@ import { NLayoutFooter, NLayoutHeader,  } from 'naive-ui'
                   $hift¥₿
                 </span>
             </NuxtLink>
+            <span v-if=useStore.isAuthenticated> Hello, {{ useStore.name }} </span>
             <slot name="header"/>
           </nav>
         </n-layout-header>
