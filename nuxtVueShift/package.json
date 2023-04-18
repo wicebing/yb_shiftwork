@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@pinia/nuxt": "^0.4.8",
-    "pinia": "^2.0.34"
+    "pinia": "^2.0.34",
+    "update": "^0.4.2"
   },
   "overrides": {
     "vue": "latest"

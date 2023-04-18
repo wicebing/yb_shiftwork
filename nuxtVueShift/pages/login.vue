@@ -70,32 +70,6 @@ async function commitLogin () {
 
 }
 
-// async function commitTest () {
-//     console.log('commitLogin')
-//     errors.value = []
-
-//     const a = ref('JWT ${useStore.token}')
-//     console.log('JWT ' + useStore.token)
-
-//     const { data, pending, refresh, error } = await useFetch('/api/staff/', {
-//         method: 'GET',
-//         baseURL:'http://localhost:8000',
-//         headers: {
-//             Authorization: `JWT ${useStore.token}` 
-//         }
-//     })
-//     // const { data } = await useFetch(() => `/api/hello/${count.value}`, { params: { token: 123 } })
-//     console.log('data',data.value)
-//     console.log('error',error)
-//     console.log(`JWT ${useStore.token}`)
-
-//     // errors.value.push(data.value.results)
-//     if (error.value){
-//         console.log('error',error.value.data.detail)
-//         errors.value.push(error.value)
-//     }
-// }
-
 async function getCurrentUser() {
     errors.value = []
     const { data, error } = await useFetch('/api/whoami/', {
@@ -105,9 +79,6 @@ async function getCurrentUser() {
             Authorization: `JWT ${useStore.token}`,
         },
     });
-
-    errors.value.push('data',data.value)
-    errors.value.push('error',error.value)
 
     if (error.value) {
         console.log('Error:', error.value);
