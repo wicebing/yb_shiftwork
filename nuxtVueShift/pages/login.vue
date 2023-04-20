@@ -9,6 +9,7 @@ const staff = reactive({
     name: '',
     password:'',
     email:'',
+    AUTHid:null
 })
 const errors = ref([])
 const repeatPW = ref('')

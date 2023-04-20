@@ -6,7 +6,7 @@ from .models import *
 class User_Serializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ( 'username', 'email', 'password',)
+        fields = ( 'username', 'email', 'password','is_staff','is_superuser')
     
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
@@ -41,6 +41,11 @@ class Table_staff_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Table_staff
         fields = '__all__'
+    
+    def validate_NTUHid(self, value):
+        if Table_staff.objects.filter(NTUHid=value).exists():
+            raise serializers.ValidationError("帳號已存在")
+        return value
 
 class Table_groupname_Serializer(serializers.ModelSerializer):
     class Meta:

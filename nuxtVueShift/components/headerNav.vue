@@ -1,14 +1,32 @@
 <script lang="ts" setup>
-import { NIcon,  } from 'naive-ui'
+import { NIcon, NDropdown, NButton  } from 'naive-ui'
 import { CalendarSharp } from '@vicons/ionicons5'
 const useStore = useUserStore()
+const useRoute = useRouter()
+
+const options= ref([
+        {
+          label: '人員',
+          key: 'userStaff',
+          props: {
+            onClick: () => {
+            //   message.success('Good!')
+            useRoute.push('/manage')
+            }
+          }
+        },
+      ])
+
 </script>
 
 <template>
     <div v-if=useStore.isAuthenticated class="flex items-center space-x-4 font-bold font-mono">
-        <NuxtLink to="/manage" v-if=useStore.is_superuser class="text-sky-800 hover:text-white">管理</NuxtLink>
+        <n-dropdown v-if=useStore.is_superuser trigger="hover" :options="options">
+            <!-- <n-button text color="#0E366F">找个地方休息</n-button> -->
+            <span class="text-sky-800 hover:text-white">管理</span>
+        </n-dropdown>
         <NuxtLink to="/" class="text-sky-800 hover:text-white">個人</NuxtLink>
-        <NuxtLink to="/today" class="text-sky-800 hover:text-white">
+        <NuxtLink to="/" class="text-sky-800 hover:text-white">
         <n-icon size="20" color="#193F85">
             <calendar-sharp />
         </n-icon>

@@ -5,19 +5,9 @@ const useStore = useUserStore()
 </script>
 <!-- //v-if=useStore.is_superuser -->
 <template> 
-  <div class="py-2 px-2">
+  <div class="py-2 px-2" v-if=useStore.isAuthenticated>
     <div class="space-y-4">
-        <n-tabs type="segment">
-            <n-tab-pane name="UserStaff" tab="員工資料">
-                <manageStaff />
-            </n-tab-pane>
-            <n-tab-pane name="the beatles" tab="the Beatles">
-            Hey Jude
-            </n-tab-pane>
-            <n-tab-pane name="jay chou" tab="Jay Chou">
-            Qilixiang
-            </n-tab-pane>
-        </n-tabs>
+      <manageStaff />
     </div>
   </div>
 </template>
