@@ -67,6 +67,7 @@ async function commitLogin () {
         useStore.setToken(data.value.access)
         console.log('useStore',useStore.token,useStore.$state.isAuthenticated)
         getCurrentUser()
+        router.push('/')
     }
 
 }

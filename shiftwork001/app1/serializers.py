@@ -6,7 +6,7 @@ from .models import *
 class User_Serializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ( 'username', 'email', 'password','is_staff','is_superuser')
+        fields = ( 'id','username', 'email', 'password','is_staff','is_superuser')
     
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
