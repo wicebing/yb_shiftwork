@@ -13,7 +13,12 @@ const useStore = useUserStore()
                   $hift¥₿
                 </span>
             </NuxtLink>
-            <span v-if=useStore.isAuthenticated> Hello, {{ useStore.name }} </span>
+            <div v-if=useStore.isAuthenticated>
+              <span> Hello, {{ useStore.name }} </span>
+              <span class="text-sky-700 font-bold" v-if=useStore.is_staff > ({{ useStore.username }}) </span>
+              <span v-if="useStore.username !== useStore.NTUHid" class="text-sky-400"> {{ useStore.NTUHid }}</span>
+              <span class="text-pink-600 font-semibold" v-if="!useStore.is_staff" > 等候管理員認證權限中 </span>              
+            </div>
             <slot name="header"/>
           </nav>
         </n-layout-header>

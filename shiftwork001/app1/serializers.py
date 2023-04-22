@@ -29,6 +29,11 @@ class User_Serializer(serializers.ModelSerializer):
         user.save()
         return user
     
+    def update(self, instance, validated_data):
+        if 'password' in validated_data:
+            instance.set_password(validated_data.pop('password'))
+        return super().update(instance, validated_data)
+    
     # username=serializers.CharField(required=True, allow_blank=False, max_length=20,
     #                                error_messages={
     #                                    'required': '請輸入帳號',

@@ -11,7 +11,7 @@ export const useUserStore = definePiniaStore('userStore', ()=>{
     const staff_id = ref('')
     const NTUHid = ref('')
     const name = ref('')
-    const birthday = ref('')
+    const birthday = ref(null)
 
     // const initStore = () => {
     //     isAuthenticated.value = false

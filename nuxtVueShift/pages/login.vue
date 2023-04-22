@@ -28,20 +28,30 @@ async function commitSignup () {
         errors.value.push('Password does not match')
         return
     }
-    const { data, pending, refresh, error } = await useFetch('/api/regist/', {
-        method: 'POST',
-        baseURL:'http://localhost:8000',
-        body: {
-            username: staff.name,
-            email: staff.email,
-            password: staff.password,
+    try{
+        const { data, pending, refresh, error } = await useFetch('/api/regist/', {
+            method: 'POST',
+            baseURL:'http://localhost:8000',
+            body: {
+                username: staff.name,
+                email: staff.email,
+                password: staff.password,
+            }
+        })
+        // const { data } = await useFetch(() => `/api/hello/${count.value}`, { params: { token: 123 } })
+        // errors.value.push(error)
+        // errors.value.push(error.value)
+        if (error.value){
+            console.log('error',error.value.data)
+            errors.value.push(error.value.data)
         }
-    })
-    // const { data } = await useFetch(() => `/api/hello/${count.value}`, { params: { token: 123 } })
-    errors.value.push(error)
-    errors.value.push(error.value.data.detail)
-    console.log('error',error)
-    console.log('error',error._object.detail)
+        // errors.value.push('please input username or email')
+        commitLogin ()
+    } catch (error) {
+        console.log('ALLerror',error)
+        errors.value.push('please try again')
+    }
+
 }
 
 async function commitLogin () {
@@ -74,26 +84,31 @@ async function commitLogin () {
 
 async function getCurrentUser() {
     errors.value = []
-    const { data, error } = await useFetch('/api/whoami/', {
-        method: 'GET',
-        baseURL: 'http://localhost:8000',
-        headers: {
-            Authorization: `JWT ${useStore.token}`,
-        },
-    });
+    try{
+        const { data, error } = await useFetch('/api/whoami/', {
+            method: 'GET',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+            },
+        });
 
-    if (error.value) {
-        console.log('Error:', error.value);
-    } else {
-        console.log('Current user:', data.value);
-        useStore.setUserDetail(data.value.id,
-        data.value.username,
-        data.value.email,
-        data.value.is_staff,
-        data.value.is_superuser,
-        data.value.table_staff
-        ) 
-        console.log('getUser',useStore.getUserDetail())
+        if (error.value) {
+            console.log('Error:', error.value);
+        } else {
+            console.log('Current user:', data.value);
+            useStore.setUserDetail(data.value.id,
+            data.value.username,
+            data.value.email,
+            data.value.is_staff,
+            data.value.is_superuser,
+            data.value.table_staff
+            ) 
+            console.log('getUser',useStore.getUserDetail())
+        }        
+    } catch (error) {
+        console.log('ALLerror',error)
+        errors.value.push('please try again')
     }
 }
 

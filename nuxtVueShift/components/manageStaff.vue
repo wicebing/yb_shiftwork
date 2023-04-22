@@ -65,6 +65,7 @@ const columnsAUTH = ref([
 const activeDrawerStaffEdit = ref(false)
 const placementDrawer = ref('right')
 const activeDrawerStaffAdd = ref(false)
+const activeDrawerAUTHEdit = ref(false)
 
 const errors = ref([])
 const result = reactive ({})
@@ -95,6 +96,24 @@ const editStaff = reactive({
     name: "",
     birthday: "",
     AUTHid: null,
+})
+
+const originalAUTH = reactive({
+    id: "",
+    username: "",
+    password: "",
+    email: "",
+    is_staff: false,
+    is_superuser: false
+});
+
+const editAUTH = reactive({
+    id: "",
+    username: "",
+    password: "",
+    email: "",
+    is_staff: false,
+    is_superuser: false
 })
 
 const options = computed(() => {
@@ -144,9 +163,10 @@ async function getAUTH () {
     errors.value.push(data.value.results)
 
     const allUsers = data.value.results;
+    const nonAdminUsers = allUsers.filter(user => user.username !== 'admin' && user.username !== 'bing');
     const nonStaffUsers = allUsers.filter(user => !user.is_staff);
 
-    Object.assign(resultAUTH, allUsers)
+    Object.assign(resultAUTH, nonAdminUsers)
     Object.assign(resultAUTH_nonStaff, nonStaffUsers)
     console.log('resultAUTH',resultAUTH)
     console.log('resultAUTH_nonStaff',resultAUTH_nonStaff)
@@ -173,6 +193,44 @@ async function editData(row) {
     Object.assign(originalStaff, row); // Store the original data before editing
     console.log("Row:", editStaff)
     activeDrawerStaffEdit.value = true
+}
+
+async function editAUTHData(row) {
+    console.log("Row:", row)
+    Object.assign(editAUTH, row)
+    Object.assign(originalAUTH, row); // Store the original data before editing
+    console.log("Row:", editAUTH)
+    activeDrawerAUTHEdit.value = true
+}
+
+async function updateAUTHData(editAUTH) {
+    console.log("Updating staff data:", editAUTH);
+    const updatedFields = {}
+    for (const key in editAUTH) {
+        if (editAUTH[key] !== originalAUTH[key]) {
+            updatedFields[key] = editAUTH[key];
+        }        
+    }
+    console.log('updatedFields', updatedFields)
+
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/regist/${editAUTH.id}/`, {
+            method: 'PATCH',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedFields),
+        });
+
+        console.log("Updated AUTH successfully:", data.value);
+        getAUTH(); // Refresh the staff list after the update is successful
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+    activeDrawerAUTHEdit.value = false;
+
 }
 
 async function updateData(editStaff) {
@@ -275,6 +333,26 @@ async function deleteData(row) {
     editing = reactive([])
 }
 
+async function deleteAUTHData(row) {
+    try {
+        console.log('deleteAUTHData', row)
+        const { data, pending, refresh, error } = await useFetch(`/api/regist/${row.id}`, {
+        method: 'DELETE',
+        baseURL: 'http://localhost:8000',
+        headers: {
+            Authorization: `JWT ${useStore.token}`,
+        },
+        })
+
+        console.log('Deleted AUTH successfully')
+        console.log('Error: ', error.value)
+    } catch (error) {
+        console.error('Error deleting data:', error);
+    }
+    getAUTH()
+    editingAUTH = reactive([])
+}
+
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -337,7 +415,7 @@ onMounted(() => {
         pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;"
         >
             <n-tab-pane name="allStaff" tab="人員總覽">
-                <n-button tertiary type="primary" strong
+                <n-button dashed type="warning" strong
                 @click=switchAddStaff
                 >
                     新增員工
@@ -394,7 +472,7 @@ onMounted(() => {
                                 v-if="!res[col.key] && col.title === 'Edit'"
                                 secondary
                                 type='info'
-                                @click= null
+                                @click= editAUTHData(res)
                                 >
                                     {{ col.key }}
                                 </n-button>
@@ -402,7 +480,7 @@ onMounted(() => {
                                 <n-button 
                                 v-if="!res[col.key]  && col.title === 'Delete'"
                                 secondary strong type='error'
-                                @click=null
+                                @click=deleteAUTHData(res)
                                 :disabled="!editingAUTH[rowIndex]"
                                 >
                                     {{ col.key }}
@@ -422,43 +500,69 @@ onMounted(() => {
         </n-tabs>
     </div>
     <n-drawer v-model:show="activeDrawerStaffEdit" :width="502" :placement="placementDrawer">
-    <n-drawer-content title="人員編輯" closable>
-        <n-form>
-            <n-form-item-row label="NTUHid">    
-                <n-input placeholder="NTUHid" v-model:value="editStaff.NTUHid" />           
-            </n-form-item-row>
-            <n-form-item-row label="name">  
-                <n-input placeholder="姓名" v-model:value="editStaff.name" />
-            </n-form-item-row>
-            <n-form-item-row label="birthday">
-                <n-date-picker type="date"  v-model:value="convertDate(editStaff).value" />  
-            </n-form-item-row>
-            <n-form-item-row label="註冊帳戶">  
-                <n-input placeholder="AUTHid" v-model:value="editStaff.AUTHid" clearable/>
-                <n-select v-model:value="editStaff.AUTHid" :options="options" />
-            </n-form-item-row>
-            <n-button type="primary" block secondary strong @click="updateData(editStaff)">
-                更正
-            </n-button>       
-        </n-form>
-    </n-drawer-content>
+        <n-drawer-content title="人員編輯" closable>
+            <n-form>
+                <n-form-item-row label="NTUHid">    
+                    <n-input placeholder="NTUHid" v-model:value="editStaff.NTUHid" />           
+                </n-form-item-row>
+                <n-form-item-row label="name">  
+                    <n-input placeholder="姓名" v-model:value="editStaff.name" />
+                </n-form-item-row>
+                <n-form-item-row label="birthday">
+                    <n-date-picker type="date"  v-model:value="convertDate(editStaff).value" />  
+                </n-form-item-row>
+                <n-form-item-row label="註冊帳戶">  
+                    <n-input placeholder="AUTHid" v-model:value="editStaff.AUTHid" clearable/>
+                    <n-select v-model:value="editStaff.AUTHid" :options="options" />
+                </n-form-item-row>
+                <n-button type="primary" block secondary strong @click="updateData(editStaff)">
+                    更正
+                </n-button>       
+            </n-form>
+        </n-drawer-content>
+    </n-drawer>
+    <n-drawer v-model:show="activeDrawerAUTHEdit" :width="502" :placement="placementDrawer">
+        <n-drawer-content title="人員編輯" closable>
+            <n-form>
+                <n-form-item-row label="username">  
+                    <n-input placeholder="用戶帳號" v-model:value="editAUTH.username" />
+                </n-form-item-row>
+                <n-form-item-row label="Email">
+                    <n-input placeholder="信箱" v-model:value="editAUTH.email" />
+                </n-form-item-row>
+                <n-form-item-row label="password">
+                    <n-input placeholder="密碼" v-model:value="editAUTH.password" />
+                </n-form-item-row>
+                <n-form-item-row label="員工認證"> 
+                    {{ editAUTH.is_staff }}
+                    <n-switch v-model:value="editAUTH.is_staff" />
+                </n-form-item-row>
+                <n-form-item-row label="管理員"> 
+                    {{ editAUTH.is_superuser }} 
+                    <n-switch v-model:value="editAUTH.is_superuser" />
+                </n-form-item-row>
+                <n-button type="primary" block secondary strong @click="updateAUTHData(editAUTH)">
+                    更正
+                </n-button>       
+            </n-form>
+        </n-drawer-content>
     </n-drawer>
     <n-drawer v-model:show="activeDrawerStaffAdd" :width="502" :placement="placementDrawer">
-    <n-drawer-content title="人員編輯" closable>
-        <n-form>
-            <n-form-item-row label="NTUHid">
-                <n-input placeholder="NTUHid" v-model:value="newStaff.NTUHid" />
-            </n-form-item-row>
-            <n-form-item-row label="name">
-                <n-input placeholder="姓名" v-model:value="newStaff.name" />
-            </n-form-item-row>
-            <n-form-item-row label="birthday">
-                <n-date-picker type="date"  v-model:value="newStaff.birthday" />
-            </n-form-item-row>
-            <n-button type="primary" block secondary strong @click="addData">
-            新增
-            </n-button>
-        </n-form>
-    </n-drawer-content>
+        <n-drawer-content title="新增人員" closable>
+            <n-form>
+                <n-form-item-row label="NTUHid">
+                    <n-input placeholder="NTUHid" v-model:value="newStaff.NTUHid" />
+                </n-form-item-row>
+                <n-form-item-row label="name">
+                    <n-input placeholder="姓名" v-model:value="newStaff.name" />
+                </n-form-item-row>
+                <n-form-item-row label="birthday">
+                    <n-date-picker type="date"  v-model:value="newStaff.birthday" />
+                </n-form-item-row>
+                <n-button type="primary" block secondary strong @click="addData">
+                新增
+                </n-button>
+            </n-form>
+        </n-drawer-content>
     </n-drawer>
 </template>
