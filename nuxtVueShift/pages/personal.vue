@@ -4,6 +4,51 @@ import { NInput, NButton, NForm, NFormItemRow,NFormItem, NDatePicker, NSwitch } 
 const useStore = useUserStore()
 const editing = ref(false)
 
+const originalStaff = reactive({
+    staff_id: "",
+    NTUHid: "",
+    name: "",
+    birthday: "",
+});
+
+const editStaff = reactive({
+    staff_id:"",
+    NTUHid: "",
+    name: "",
+    birthday: "",
+})
+
+const originalAUTH = reactive({
+    id: "",
+    username: "",
+    password: "",
+    email: "",
+
+});
+
+const editAUTH = reactive({
+    id: "",
+    username: "",
+    password: "",
+    email: "",
+})
+
+async function editData(useStore) {
+    console.log("useStore:", useStore)
+    Object.assign(editStaff, useStore)
+    Object.assign(originalStaff, useStore); // Store the original data before editing
+    console.log("useStore:", editStaff)
+    activeDrawerStaffEdit.value = true
+}
+
+async function editAUTHData(useStore) {
+    console.log("useAUTHStore:", useStore)
+    Object.assign(editAUTH, useStore)
+    Object.assign(originalAUTH, useStore); // Store the original data before editing
+    console.log("useAUTHStore:", editAUTH)
+    activeDrawerAUTHEdit.value = true
+}
+
 function convertDate(editStaff) {
     console.log('convertDate', editStaff.birthday)
   return computed({
@@ -12,13 +57,78 @@ function convertDate(editStaff) {
   });
 }
 
+async function updateEditData() {
+  editData(useStore)
+  editAUTHData(useStore)
+}
+
+async function updateAllData() {
+  updateAUTHData(useStore)
+  updateStaffData(useStore)
+}
+
+async function updateAUTHData(useStore) {
+    Object.assign(editAUTH, useStore)
+    console.log("Updating staff data:", editAUTH);
+    const updatedFields = {}
+    for (const key in editAUTH) {
+        if (editAUTH[key] !== originalAUTH[key]) {
+            updatedFields[key] = editAUTH[key];
+        }        
+    }
+    console.log('updatedFields', updatedFields)
+
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/regist/${editAUTH.id}/`, {
+            method: 'PATCH',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedFields),
+        });
+
+        console.log("Updated AUTH successfully:", data.value);
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+}
+
+async function updateStaffData(useStore) {
+    Object.assign(editStaff, useStore)
+    console.log("Updating staff data:", editStaff);
+    const updatedFields = {}
+    for (const key in editStaff) {
+        if (editStaff[key] !== originalStaff[key]) {
+            updatedFields[key] = editStaff[key];
+        }        
+    }
+    console.log(`/api/staff/${editStaff.staff_id}/`)
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/staff/${editStaff.staff_id}/`, {
+            method: 'PATCH',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedFields),
+        });
+
+        console.log("Updated Staff successfully:", data.value);
+        console.log("Updated Staff error:", error.value);
+        getUset(); // Refresh the staff list after the update is successful
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+}
+
 </script>
 <!-- //v-if=useStore.is_superuser -->
 <template> 
   <div class="py-2 px-2" v-if=useStore.isAuthenticated>
     <div class="space-y-4">
-      personal
-      {{ useStore }}
       <n-form label-placement="left" label-width="auto" inline>
             <n-form-item label="員工權限認證">  
               <span class="text-pink-600 font-semibold"> {{useStore.is_staff}} </span>
@@ -45,10 +155,10 @@ function convertDate(editStaff) {
                 <n-input placeholder="email" v-model:value="useStore.email" clearable :disabled="!editing"/>
             </n-form-item-row>
             <n-form-item-row label="修改資料" v-if=useStore.is_staff>  
-                <n-switch v-model:value="editing" />
+                <n-switch v-model:value="editing" @update:value="updateEditData"/>
             </n-form-item-row>
       </n-form>
-        <n-button type="primary" block secondary strong @click="null" :disabled="!editing" v-if=useStore.is_staff>
+        <n-button type="primary" block secondary strong @click="updateAllData" :disabled="!editing" v-if=useStore.is_staff>
             更正個人資料
         </n-button>
         <n-button type="primary" block secondary strong @click="null" :disabled="!editing" v-if=useStore.is_staff>

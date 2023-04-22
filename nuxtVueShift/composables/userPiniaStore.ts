@@ -64,7 +64,7 @@ export const useUserStore = definePiniaStore('userStore', ()=>{
             staff_id.value = ''
             NTUHid.value = ''
             name.value = ''
-            birthday.value = ''
+            birthday.value = null
         }
     }
 

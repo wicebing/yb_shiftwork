@@ -20,11 +20,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .common.permissions import IsStaff
+from .common.permissions import IsStaff 
 from .serializers import MyTokenObtainPairSerializer
 from .form import *
 from .serializers import *
 from .mypage import MyPageNumberPagination
+from .permissions import IsOwnerOrAdmin
 
 class CustomBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
@@ -63,13 +64,13 @@ class UserGenericView(generics.ListCreateAPIView):
 class UserDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = User_Serializer
+    permission_classes = (IsOwnerOrAdmin, )
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
-
 
 class staffGenericView(generics.ListCreateAPIView):
     queryset = Table_staff.objects.all()
     serializer_class = Table_staff_Serializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, )
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
     # pagination_class = MyPageNumberPagination
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
@@ -79,9 +80,8 @@ class staffGenericView(generics.ListCreateAPIView):
 class staffDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_staff.objects.all()
     serializer_class = Table_staff_Serializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsOwnerOrAdmin,)
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
-
 
 
 class MyObtainTokenPairView(TokenObtainPairView):
@@ -89,7 +89,7 @@ class MyObtainTokenPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 @api_view(['GET'])
-@permission_classes([IsStaff])
+# @permission_classes([IsStaff])
 @authentication_classes([JWTAuthentication,SessionAuthentication])
 def get_current_user(request):
     user = request.user
