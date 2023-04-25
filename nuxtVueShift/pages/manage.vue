@@ -1,5 +1,4 @@
 <script setup>
-import { NTabs, NTabPane } from 'naive-ui'
 
 const useStore = useUserStore()
 </script>
@@ -13,10 +12,5 @@ const useStore = useUserStore()
 </template>
 
 <style scoped>
-.n-layout-sider {
-  background: rgba(214, 213, 132, 0.342);
-}
-.n-layout-content {
-  background: rgba(255, 254, 184, 0.308);
-}
+
 </style>

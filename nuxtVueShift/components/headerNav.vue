@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { NIcon, NDropdown, NButton  } from 'naive-ui'
+import { NIcon, NDropdown } from 'naive-ui'
 import { CalendarSharp } from '@vicons/ionicons5'
 const useStore = useUserStore()
 const useRoute = useRouter()
@@ -12,6 +12,16 @@ const options= ref([
             onClick: () => {
             //   message.success('Good!')
             useRoute.push('/manage')
+            }
+          }
+        },
+        {
+          label: '專案',
+          key: 'shiftworks',
+          props: {
+            onClick: () => {
+            //   message.success('Good!')
+            useRoute.push('/shiftworks')
             }
           }
         },

@@ -83,6 +83,89 @@ class staffDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsOwnerOrAdmin,)
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
 
+class projectGenericView(generics.ListCreateAPIView):
+    queryset = Table_project.objects.all()
+    serializer_class = Table_project_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    filter_fields = ('status',)
+    ordering_fields = ('name','status')
+
+    def get_queryset(self):
+        queryset = Table_project.objects.all()
+        status = self.request.query_params.get('status', None)
+        if status is not None:
+            if status.lower() == 'true':
+                queryset = queryset.filter(status=True)
+            elif status.lower() == 'false':
+                queryset = queryset.filter(status=False)
+        return queryset
+
+class projectDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_project.objects.all()
+    serializer_class = Table_project_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class dateGenericView(generics.ListCreateAPIView):
+    queryset = Table_date.objects.all()
+    serializer_class = Table_date_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    filter_fields = ('date',)
+    ordering_fields = ('date',)
+    search_fields = ('date',)
+
+class dateDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_date.objects.all()
+    serializer_class = Table_date_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class shiftGenericView(generics.ListCreateAPIView):
+    queryset = Table_shift.objects.all()
+    serializer_class = Table_shift_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    filter_fields = ('charactor','name',)
+    ordering_fields = ('name','charactor','time')
+    search_fields = ('name','charactor','time',)
+
+class shiftDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_shift.objects.all()
+    serializer_class = Table_shift_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class groupnameGeneraicView(generics.ListCreateAPIView):
+    queryset = Table_groupname.objects.all()
+    serializer_class = Table_groupname_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    filter_fields = ('name','priority')
+    ordering_fields = ('turn','priority')
+    search_fields = ('name',)
+
+    queryset = Table_groupname.objects.all().order_by('priority', 'turn')
+
+class groupnameDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_groupname.objects.all()
+    serializer_class = Table_groupname_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+
+
+
+
 
 class MyObtainTokenPairView(TokenObtainPairView):
     permission_classes = (permissions.AllowAny,)

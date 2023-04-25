@@ -28,18 +28,23 @@ from app1 import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # path('login/', views.user_login),
-    # path("index",views.index),
-    # path("var",views.var),
-    # path("reg",views.user_register),
+    path('api/whoami/', views.get_current_user, name='get_current_user'),
     path('api/regist/', views.UserGenericView.as_view()),
     path('api/regist/<pk>/', views.UserDetailGenericView.as_view()),
     path('api/staff/', views.staffGenericView.as_view()),
     path('api/staff/<pk>/', views.staffDetailGenericView.as_view()),
-    # path('app1/staffviewset/', include(router.urls)),
-    # path('api-jwt-auth/', TokenObtainPairView.as_view()),
+    path('api/project/', views.projectGenericView.as_view()),
+    path('api/project/<pk>/', views.projectDetailGenericView.as_view()),
+    path('api/date/', views.dateGenericView.as_view()),
+    path('api/date/<pk>/', views.dateDetailGenericView.as_view()),
+    path('api/shift/', views.shiftGenericView.as_view()),
+    path('api/shift/<pk>/', views.shiftDetailGenericView.as_view()),
+    path('api/groupname/', views.groupnameGeneraicView.as_view()),
+    path('api/groupname/<pk>/', views.groupnameDetailGenericView.as_view()),
+
+
+
     path('docs/', include_docs_urls(title='My API title')),
     path('token/', views.MyObtainTokenPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/whoami/', views.get_current_user, name='get_current_user'),
 ]

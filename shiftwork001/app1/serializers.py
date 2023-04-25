@@ -51,27 +51,59 @@ class Table_staff_Serializer(serializers.ModelSerializer):
         if Table_staff.objects.filter(NTUHid=value).exists():
             raise serializers.ValidationError("帳號已存在")
         return value
-
-class Table_groupname_Serializer(serializers.ModelSerializer):
-    class Meta:
-        model = Table_groupname
-        fields = '__all__'
-
+    
 class Table_groups_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Table_groups
         fields = '__all__'
 
+class Table_groupname_Serializer(serializers.ModelSerializer):
+    groups = Table_groups_Serializer(many=True, read_only=True)
+    class Meta:
+        model = Table_groupname
+        fields = ['id','name','priority', 'turn','groups']
+    def validate_name(self, value):
+        if Table_groupname.objects.filter(name=value).exists():
+            raise serializers.ValidationError("名稱已存在")
+        return value
+    def validate(self, attrs):
+        turn = attrs.get('turn', None)
+        priority = attrs.get('priority', None)
+
+        if turn is not None and priority is not None:
+            if Table_groupname.objects.filter(turn=turn, priority=priority).exists():
+                raise serializers.ValidationError({"turn": "The combination of turn and priority already exists."})
+
+        return attrs
+
 class Table_date_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Table_date
         fields = '__all__'
+    def validate_name(self, value):
+        if Table_date.objects.filter(date=value).exists():
+            raise serializers.ValidationError("日期已存在")
+        return value
     
 class Table_shift_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Table_shift
         fields = '__all__'
-    
+    def validate_name(self, value):
+        if Table_shift.objects.filter(name=value).exists():
+            raise serializers.ValidationError("班種名稱已存在")
+        return value
+
+class Table_project_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_project
+        fields = '__all__'
+    def validate_name(self, value):
+        if Table_project.objects.filter(name=value).exists():
+            raise serializers.ValidationError("專案名稱已存在")
+        return value
+
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):

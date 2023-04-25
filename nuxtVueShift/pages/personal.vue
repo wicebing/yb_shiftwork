@@ -1,8 +1,11 @@
 <script setup>
-import { NInput, NButton, NForm, NFormItemRow,NFormItem, NDatePicker, NSwitch } from 'naive-ui'
+import { NInput, NButton, NForm, NFormItemRow,NFormItem, NDatePicker, NSwitch, NDrawer, NDrawerContent } from 'naive-ui'
 
 const useStore = useUserStore()
 const editing = ref(false)
+const editingPW = ref(false)
+const placementDrawer = ref('right')
+const newPW = ref('')
 
 const originalStaff = reactive({
     staff_id: "",
@@ -49,6 +52,10 @@ async function editAUTHData(useStore) {
     activeDrawerAUTHEdit.value = true
 }
 
+async function editAUTHPW() {
+  editingPW.value = true
+}
+
 function convertDate(editStaff) {
     console.log('convertDate', editStaff.birthday)
   return computed({
@@ -65,6 +72,7 @@ async function updateEditData() {
 async function updateAllData() {
   updateAUTHData(useStore)
   updateStaffData(useStore)
+  editing.value = false
 }
 
 async function updateAUTHData(useStore) {
@@ -124,6 +132,28 @@ async function updateStaffData(useStore) {
     }
 }
 
+async function updateAUTHpw() {
+    console.log("Updating staff PW:");
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/regist/${editAUTH.id}/`, {
+            method: 'PATCH',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: {
+              "password": newPW.value
+            }
+        });
+
+        console.log("Updated AUTH PW successfully:", data.value);
+        editingPW.value = false
+    } catch (error) {
+        console.error('Error updating PW data:', error);
+    }
+}
+
 </script>
 <!-- //v-if=useStore.is_superuser -->
 <template> 
@@ -158,12 +188,24 @@ async function updateStaffData(useStore) {
                 <n-switch v-model:value="editing" @update:value="updateEditData"/>
             </n-form-item-row>
       </n-form>
-        <n-button type="primary" block secondary strong @click="updateAllData" :disabled="!editing" v-if=useStore.is_staff>
-            更正個人資料
-        </n-button>
-        <n-button type="primary" block secondary strong @click="null" :disabled="!editing" v-if=useStore.is_staff>
-            修改密碼
-        </n-button>           
+      <n-button type="primary" block secondary strong @click="updateAllData" :disabled="!editing" v-if=useStore.is_staff>
+          更正個人資料
+      </n-button>
+      <n-button type="primary" block secondary strong @click="editAUTHPW" :disabled="!editing" v-if=useStore.is_staff>
+          修改密碼
+      </n-button>
+      <n-drawer v-model:show="editingPW" :width="502" :placement="placementDrawer">
+        <n-drawer-content title="新增人員" closable>
+            <n-form>
+              <n-form-item-row label="password">
+                    <n-input placeholder="密碼" v-model:value="newPW" />
+              </n-form-item-row>
+              <n-button type="primary" block secondary strong @click="updateAUTHpw()">
+                    修改密碼
+              </n-button>  
+            </n-form>
+        </n-drawer-content>
+      </n-drawer>
 
     </div>
   </div>

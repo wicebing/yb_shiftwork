@@ -230,7 +230,6 @@ async function updateAUTHData(editAUTH) {
         console.error('Error updating data:', error);
     }
     activeDrawerAUTHEdit.value = false;
-
 }
 
 async function updateData(editStaff) {
@@ -408,6 +407,7 @@ onMounted(() => {
 <template>
     <div v-if=useStore.isAuthenticated class="flex items-center space-x-4 font-bold font-mono text-left">
         <n-tabs
+        type="segment"
         class="card-tabs"
         default-value="allStaff"
         size="small"

@@ -29,6 +29,8 @@ class Table_staff(models.Model):
 class Table_groupname(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='群組名稱')
+    priority = models.IntegerField(verbose_name='順序碼', default=0)
+    turn = models.IntegerField(verbose_name='順序碼', default=0)
     def __str__(self):
         return str(self.id)+self.name
     
@@ -36,6 +38,7 @@ class Table_groups(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     groupname = models.ForeignKey(Table_groupname,on_delete=models.DO_NOTHING,verbose_name='群組名稱')
     staff = models.ForeignKey(Table_staff,on_delete=models.DO_NOTHING,verbose_name='人員')
+    priority = models.IntegerField(verbose_name='順序碼', default=0)
     turn = models.IntegerField(verbose_name='順序碼')
     def __str__(self):
         return str(self.id)+self.groupname.name+self.staff.name
@@ -57,7 +60,7 @@ class Table_shift(models.Model):
 class Table_project(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='專案名稱')
-    status = models.BooleanField(verbose_name='狀態')
+    status = models.BooleanField(verbose_name='狀態',default=False)
     def __str__(self):
         return str(self.id)+self.name+str(self.status)
 
