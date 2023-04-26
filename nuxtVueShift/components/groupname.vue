@@ -44,11 +44,11 @@ const columnsGroup = ref([
       key: 'turn'
     },
     {
-      title: 'staff',
-      key: 'staff'
+      title: '姓名',
+      key: 'staff_name'
     },
     {
-      title: '更新資料',
+      title: '更新',
       key: 'Edit',
     },
     {
@@ -135,7 +135,9 @@ const optionsStaffSpecial = computed(() => {
 });
 
 function formatGroups(groups) {
-  return groups.map((group) => `${group.priority}-${group.turn}-${group.staff}`);
+    // console.log('formatGroups', user)
+    // return groups.map((user) => user.staff)
+  return groups.map((group) => `${group.priority}-${group.turn}-${group.staff_name}-${group.staff}`);
 }
 
 
@@ -537,7 +539,6 @@ onMounted(() => {
     <n-drawer v-model:show="activeDrawerGroupEdit" :width="502" :placement="placementDrawer">
         <n-drawer-content title="專案名稱" closable>
             <n-form>
-                {{ specialGroup }}
                 <n-switch v-model:value="specialGroup">
                     <template #checked> 
                     特殊編組
@@ -589,10 +590,10 @@ onMounted(() => {
 
                                 <n-switch v-if="col.title==='Delete'" v-model:value="editingGroup[rowIndex]" />
 
-                                <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key!=='staff'">
+                                <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key!=='staff_name'">
                                     <n-input placeholder="0,1,2,3..." v-model:value="res[col.key]" />
                                 </div>
-                                <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key==='staff'">
+                                <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key==='staff_name'">
                                     {{ res[col.key] }}
                                 </div>                 
                             </td>

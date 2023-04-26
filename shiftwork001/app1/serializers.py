@@ -43,9 +43,12 @@ class User_Serializer(serializers.ModelSerializer):
  
 class Table_groups_Serializer(serializers.ModelSerializer):
     # groupname = serializers.StringRelatedField()
+    staff_name = serializers.StringRelatedField(source='staff.name', read_only=True)
+
     class Meta:
         model = Table_groups
         fields = '__all__'
+        extra_fields = ['staff_name']
 
 class Table_groupname_Serializer(serializers.ModelSerializer):
     groups = Table_groups_Serializer(source='table_groups_set',many=True, read_only=True)
