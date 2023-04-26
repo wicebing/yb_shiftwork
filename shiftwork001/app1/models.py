@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 #         db_table = 'UserBaseInfo4'
 
 class Table_staff(models.Model):
-    id = models.AutoField(primary_key=True,verbose_name='ID')
+    id = models.CharField(primary_key=True,max_length=8,verbose_name='ID')
     NTUHid = models.CharField(max_length=8,verbose_name='NTUH ID')
     name = models.CharField(max_length=100,verbose_name='姓名')
     birthday = models.DateField(verbose_name='生日')
@@ -29,7 +29,7 @@ class Table_staff(models.Model):
 class Table_groupname(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='群組名稱')
-    priority = models.IntegerField(verbose_name='順序碼', default=0)
+    priority = models.IntegerField(verbose_name='優先碼', default=0)
     turn = models.IntegerField(verbose_name='順序碼', default=0)
     def __str__(self):
         return str(self.id)+self.name
@@ -38,8 +38,8 @@ class Table_groups(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     groupname = models.ForeignKey(Table_groupname,on_delete=models.DO_NOTHING,verbose_name='群組名稱')
     staff = models.ForeignKey(Table_staff,on_delete=models.DO_NOTHING,verbose_name='人員')
-    priority = models.IntegerField(verbose_name='順序碼', default=0)
-    turn = models.IntegerField(verbose_name='順序碼')
+    priority = models.IntegerField(verbose_name='優先碼', default=1)
+    turn = models.IntegerField(verbose_name='順序碼', default=0)
     def __str__(self):
         return str(self.id)+self.groupname.name+self.staff.name
 

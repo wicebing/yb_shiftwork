@@ -1,5 +1,5 @@
 <script setup>
-import {NButton, NDrawer, NDrawerContent, NForm, NFormItemRow, NInput, NSwitch, NSelect, NTag } from 'naive-ui'
+import {NButton, NDrawer, NDrawerContent, NForm, NFormItemRow, NInput, NSwitch, NTransfer, NDivider } from 'naive-ui'
 
 const useStore = useUserStore()
 
@@ -51,8 +51,12 @@ const activeDrawerProjectAdd = ref(false)
 const placementDrawer = ref('right')
 const editing = reactive([])
 const errors = ref([])
+const resultStaff = reactive ({})
+const groupStaff = reactive ({})
+const optionsSelectStaff = ref([]);
 
 const newProject = reactive({
+    id: "",
     name: "",
     priority: "",
     turn: "",
@@ -60,6 +64,7 @@ const newProject = reactive({
 })
 
 const originalProject = reactive({
+    id: "",
     name: "",
     priority: "",
     turn: "",
@@ -67,11 +72,88 @@ const originalProject = reactive({
 });
 
 const editProject = reactive({
+    id: "",
     name: "",
     priority: "",
     turn: "",
     groups: "",
 })
+
+const optionsStaffValue = ref("")
+
+const optionsStaff = computed(() => {
+    console.log('resultStaff', resultStaff);
+    return Object.values(resultStaff).map((user) => {
+        const inOptionsSelectStaff = optionsSelectStaff.value.includes(user.id);
+        const hasGroups = user.groups.length > 0;
+        return {
+            label: user.name,
+            value: user.id,
+            disabled: !inOptionsSelectStaff && hasGroups, // set disabled to true if groups array has elements or if the user is in optionsSelectStaff, otherwise false
+        };
+    });
+});
+
+function formatGroups(groups) {
+  return groups.map((group) => `${group.priority}-${group.turn}-${group.staff}`);
+}
+
+
+async function getUser () {
+    console.log('getUser')
+    errors.value = []
+
+    try {
+        const { data, pending, refresh, error } = await useFetch('/api/staff/', {
+            method: 'GET',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}` 
+            }
+        })
+
+        if (data.value) {
+            console.log('data',data.value)
+            console.log('error',error)
+            Object.assign(resultStaff, data.value.results)        
+        } else {
+            console.log('error',error)
+            errors.value.push(error)
+            errors.value.push(data.value.results)
+        }
+    } catch {
+        console.log('error',error)
+        errors.value.push(error)
+    }
+}
+
+async function getGroup (groupname) {
+    console.log('getGroup:',groupname)
+    errors.value = []
+
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/group/?groupname=${groupname}`, {
+            method: 'GET',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}` 
+            }
+        })
+
+        if (data.value) {
+            console.log('getGroupData',data.value)
+            Object.assign(groupStaff, data.value.results)
+            optionsSelectStaff.value = data.value.results.map((user) => user.staff); // update optionsSelectStaff with the staff ids   
+        } else {
+            console.log('error',error)
+            errors.value.push(error)
+            errors.value.push(data.value.results)
+        }
+    } catch {
+        console.log('error',error)
+        errors.value.push(error)
+    }
+}
 
 async function getProject () {
     console.log('getProject')
@@ -99,6 +181,8 @@ async function getProject () {
 
 async function editData(row) {
     console.log("Row:", row)
+    console.log("Rowid:", row.id)
+    await getGroup(row.name)
     Object.assign(editProject, row)
     Object.assign(originalProject, row); // Store the original data before editing
     console.log("editProject:", editProject)
@@ -196,9 +280,38 @@ async function updateData() {
     }
 }
 
+async function updateGroupmenber() {
+    console.log("Updating updateGroupmenber");
+
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/groupname/${editProject.id}/`, {
+            method: 'PATCH',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedFields),
+        });
+        
+        if (data.value) {
+            console.log("Updated successfully:", data.value);
+            getProject(); // Refresh the staff list after the update is successful
+            activeDrawerProjectEdit.value = false;
+        } else {
+            console.log('error',error)
+            console.log('errorName',error.value.data)
+            errors.value.push(error.value.data)
+        }
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+}
+
 
 onMounted(() => {
     getProject()
+    getUser()
 })
 
 </script>
@@ -238,9 +351,14 @@ onMounted(() => {
 
                     <n-switch v-if="col.title==='Delete'" v-model:value="editing[rowIndex]" />
 
-                    <div v-if="res[col.key] !== null && res[col.key] !== undefined">
+                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key!=='groups'">
                         {{ res[col.key] }}
-                    </div>                              
+                    </div>
+                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key==='groups'">
+                        <tr v-for="member in formatGroups(res[col.key])">
+                            <td>{{ member }}</td>
+                        </tr>
+                    </div>                         
                 </td>
             </tr>
         </tbody>
@@ -257,9 +375,7 @@ onMounted(() => {
                 <n-form-item-row label="順序編碼">
                     <n-input placeholder="0,1,2,..." v-model:value="editProject.turn" />
                 </n-form-item-row>
-                <n-form-item-row label="屬性">
 
-                </n-form-item-row>
                 <div v-if="errors.length" class="mb-6 py-4 px-6 bg-rose-400 rounded-xl">
                     <p v-for="error in errors" :key="error">
                         {{ error }}
@@ -267,7 +383,19 @@ onMounted(() => {
                 </div>
                 <n-button type="primary" block secondary strong @click="updateData(editProject)">
                     更正
-                </n-button>       
+                </n-button>
+            </n-form>
+            <n-divider />
+            <n-form>
+                {{ groupStaff }}
+                {{ editProject.id }}
+                {{ optionsStaffValue }}
+                <n-form-item-row label="組員">
+                    <n-transfer ref="transfer" :options="optionsStaff" v-model:value="optionsSelectStaff" />
+                </n-form-item-row>
+                <n-button type="primary" block secondary strong @click="updateData(editProject)">
+                    調整組員
+                </n-button>
             </n-form>
         </n-drawer-content>
     </n-drawer>

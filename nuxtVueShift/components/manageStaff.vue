@@ -117,7 +117,7 @@ const editAUTH = reactive({
 })
 
 const options = computed(() => {
-    console.log('propsResultAUTH',resultAUTH_nonStaff)
+    console.log('ResultAUTH',resultAUTH_nonStaff)
     return Object.values(resultAUTH_nonStaff).map((user) => ({
                         label: user.username,
                         value: user.id
@@ -370,6 +370,7 @@ async function addData() {
         Authorization: `JWT ${useStore.token}`,
         },
         body: {
+            id: newStaff.NTUHid,
             NTUHid: newStaff.NTUHid,
             name: newStaff.name,
             birthday: formatDate(new Date(newStaff.birthday)),
@@ -503,7 +504,7 @@ onMounted(() => {
         <n-drawer-content title="人員編輯" closable>
             <n-form>
                 <n-form-item-row label="NTUHid">    
-                    <n-input placeholder="NTUHid" v-model:value="editStaff.NTUHid" />           
+                    <n-input placeholder="NTUHid" v-model:value="editStaff.NTUHid" disabled="true"/>           
                 </n-form-item-row>
                 <n-form-item-row label="name">  
                     <n-input placeholder="姓名" v-model:value="editStaff.name" />

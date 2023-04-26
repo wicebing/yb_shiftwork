@@ -40,25 +40,15 @@ class User_Serializer(serializers.ModelSerializer):
     #                                    'blank': '帳號不能為空',
     #                                    'max_length': '帳號不能超過20個字',
     #                                    }) 
-
-class Table_staff_Serializer(serializers.ModelSerializer):
-    # AUTHid = User_Serializer()
-    class Meta:
-        model = Table_staff
-        fields = '__all__'
-    
-    def validate_NTUHid(self, value):
-        if Table_staff.objects.filter(NTUHid=value).exists():
-            raise serializers.ValidationError("帳號已存在")
-        return value
-    
+ 
 class Table_groups_Serializer(serializers.ModelSerializer):
+    # groupname = serializers.StringRelatedField()
     class Meta:
         model = Table_groups
         fields = '__all__'
 
 class Table_groupname_Serializer(serializers.ModelSerializer):
-    groups = Table_groups_Serializer(many=True, read_only=True)
+    groups = Table_groups_Serializer(source='table_groups_set',many=True, read_only=True)
     class Meta:
         model = Table_groupname
         fields = ['id','name','priority', 'turn','groups']
@@ -75,7 +65,20 @@ class Table_groupname_Serializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"turn": "The combination of turn and priority already exists."})
 
         return attrs
+    
+class Table_staff_Serializer(serializers.ModelSerializer):
+    # AUTHid = User_Serializer()
+    groups = Table_groups_Serializer(source='table_groups_set',many=True, read_only=True)
 
+    class Meta:
+        model = Table_staff
+        fields = ['id', 'NTUHid', 'name', 'birthday', 'AUTHid', 'groups']
+    
+    def validate_NTUHid(self, value):
+        if Table_staff.objects.filter(NTUHid=value).exists():
+            raise serializers.ValidationError("帳號已存在")
+        return value
+    
 class Table_date_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Table_date

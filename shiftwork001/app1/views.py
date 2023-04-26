@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 from rest_framework import filters
 from rest_framework.views import APIView
@@ -161,6 +162,37 @@ class groupnameDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = Table_groupname_Serializer
     permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class groupGenericView(generics.ListCreateAPIView):
+    queryset = Table_groups.objects.all()
+    serializer_class = Table_groups_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    filter_fields = ()
+    ordering_fields = ('turn','priority')
+    search_fields = ('staff',)
+    queryset = Table_groups.objects.all().order_by('priority', 'turn')
+
+    def get_queryset(self):
+        groupname = self.request.query_params.get('groupname', None)
+        queryset = Table_groups.objects.all().order_by('priority', 'turn')
+
+        if groupname is not None:
+            groupname_instance = get_object_or_404(Table_groupname, name=groupname)
+            queryset = queryset.filter(groupname=groupname_instance)
+
+        return queryset
+
+class groupDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_groups.objects.all()
+    serializer_class = Table_groups_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+
+
 
 
 
