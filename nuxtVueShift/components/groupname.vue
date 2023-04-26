@@ -21,7 +21,34 @@ const columns = ref([
       key: 'groups'
     },
     {
+      title: '變更組員',
+      key: 'EditGroup',
+    },
+    {
       title: 'Edit',
+      key: 'Edit',
+    },
+    {
+      title: 'Delete',
+      key: '刪',
+    }
+])
+
+const columnsGroup = ref([
+    {
+      title: '優先碼',
+      key: 'priority'
+    },
+    {
+      title: '編碼',
+      key: 'turn'
+    },
+    {
+      title: 'staff',
+      key: 'staff'
+    },
+    {
+      title: '更新資料',
       key: 'Edit',
     },
     {
@@ -48,12 +75,17 @@ const options = ref([
 const result = reactive ({})
 const activeDrawerProjectEdit = ref(false)
 const activeDrawerProjectAdd = ref(false)
+const activeDrawerGroupEdit = ref(false)
 const placementDrawer = ref('right')
 const editing = reactive([])
+const editingGroup = reactive([])
 const errors = ref([])
 const resultStaff = reactive ({})
 const groupStaff = reactive ({})
 const optionsSelectStaff = ref([]);
+const oldGroupMembers = ref([]);
+const newAddMembers = ref([]);
+const specialGroup = ref(false);
 
 const newProject = reactive({
     id: "",
@@ -79,8 +111,6 @@ const editProject = reactive({
     groups: "",
 })
 
-const optionsStaffValue = ref("")
-
 const optionsStaff = computed(() => {
     console.log('resultStaff', resultStaff);
     return Object.values(resultStaff).map((user) => {
@@ -89,7 +119,17 @@ const optionsStaff = computed(() => {
         return {
             label: user.name,
             value: user.id,
-            disabled: !inOptionsSelectStaff && hasGroups, // set disabled to true if groups array has elements or if the user is in optionsSelectStaff, otherwise false
+            disabled: hasGroups, // set disabled to true if groups array has elements or if the user is in optionsSelectStaff, otherwise false
+        };
+    });
+});
+
+const optionsStaffSpecial = computed(() => {
+    console.log('resultStaff', resultStaff);
+    return Object.values(resultStaff).map((user) => {
+        return {
+            label: user.name,
+            value: user.id,
         };
     });
 });
@@ -102,9 +142,11 @@ function formatGroups(groups) {
 async function getUser () {
     console.log('getUser')
     errors.value = []
-
+    for (const key in resultStaff) {
+        delete resultStaff[key];
+    }
     try {
-        const { data, pending, refresh, error } = await useFetch('/api/staff/', {
+        const { data, pending, refresh, error } = await useFetch('/api/staff/?ordering=NTUHid', {
             method: 'GET',
             baseURL:'http://localhost:8000',
             headers: {
@@ -130,9 +172,12 @@ async function getUser () {
 async function getGroup (groupname) {
     console.log('getGroup:',groupname)
     errors.value = []
+    for (const key in groupStaff) {
+        delete groupStaff[key];
+    }
 
     try {
-        const { data, pending, refresh, error } = await useFetch(`/api/group/?groupname=${groupname}`, {
+        const { data, pending, refresh, error } = await useFetch(`/api/group/?groupname_id=${groupname}`, {
             method: 'GET',
             baseURL:'http://localhost:8000',
             headers: {
@@ -143,7 +188,10 @@ async function getGroup (groupname) {
         if (data.value) {
             console.log('getGroupData',data.value)
             Object.assign(groupStaff, data.value.results)
-            optionsSelectStaff.value = data.value.results.map((user) => user.staff); // update optionsSelectStaff with the staff ids   
+            optionsSelectStaff.value = data.value.results.map((user) => user.staff) // update optionsSelectStaff with the staff ids   
+            oldGroupMembers.value = data.value.results.map((user) => user.staff)
+            getUser()
+            getProject()
         } else {
             console.log('error',error)
             errors.value.push(error)
@@ -157,7 +205,9 @@ async function getGroup (groupname) {
 
 async function getProject () {
     console.log('getProject')
-
+    for (const key in result) {
+        delete result[key];
+    }
     try{
         const { data, pending, refresh, error } = await useFetch('/api/groupname/', {
             method: 'GET',
@@ -182,11 +232,21 @@ async function getProject () {
 async function editData(row) {
     console.log("Row:", row)
     console.log("Rowid:", row.id)
-    await getGroup(row.name)
+    await getGroup(row.id)
     Object.assign(editProject, row)
     Object.assign(originalProject, row); // Store the original data before editing
     console.log("editProject:", editProject)
     activeDrawerProjectEdit.value = true
+}
+
+async function editDataGroup(row) {
+    console.log("Row:", row)
+    console.log("Rowid:", row.id)
+    await getGroup(row.id)
+    Object.assign(editProject, row)
+    Object.assign(originalProject, row); // Store the original data before editing
+    console.log("editProject:", editProject)
+    activeDrawerGroupEdit.value = true
 }
 
 async function deleteData(row) {
@@ -208,6 +268,27 @@ async function deleteData(row) {
     }
     getProject()
     editing = reactive([])
+}
+
+async function deleteDataGroup(row,groupname) {
+    try {
+        console.log('deleteData', row)
+        const { data, pending, refresh, error } = await useFetch(`/api/group/${row.id}`, {
+        method: 'DELETE',
+        baseURL: 'http://localhost:8000',
+        headers: {
+            Authorization: `JWT ${useStore.token}`,
+        },
+        })
+
+        console.log('deleteData', row)
+        console.log('Deleted successfully')
+        console.log('Error: ', error.value)
+    } catch (error) {
+        console.error('Error deleting data:', error);
+    }
+    getGroup(groupname)
+    editingGroup = reactive([])
 }
 
 async function addData() {
@@ -245,6 +326,23 @@ function switchactiveDrawerProjectAdd() {
     activeDrawerProjectAdd.value = !activeDrawerProjectAdd.value
 }
 
+function findStaffIds(optionsSelectStaff, groupStaff) {
+  const staffIds = [];
+  console.log('findStaffIds:',optionsSelectStaff)
+  for (const key in groupStaff) {
+    const group = groupStaff[key];
+    console.log('findStaffIds=group:',group)
+    if (optionsSelectStaff.includes(group.staff)) {
+      staffIds.push(group.id);
+      console.log('findStaffIds=AAAAAAAAAAAAA')
+    } else {
+      staffIds.push('n');
+      console.log('findStaffIds=bbbbbbbbbbbbb')
+    }
+  }
+  return staffIds;
+}
+
 async function updateData() {
     console.log("Updating staff data:", editProject);
     const updatedFields = {}
@@ -280,24 +378,24 @@ async function updateData() {
     }
 }
 
-async function updateGroupmenber() {
-    console.log("Updating updateGroupmenber");
-
+async function updateDataGroup(res) {
     try {
-        const { data, pending, refresh, error } = await useFetch(`/api/groupname/${editProject.id}/`, {
+        const { data, pending, refresh, error } = await useFetch(`/api/group/${res.id}/`, {
             method: 'PATCH',
             baseURL: 'http://localhost:8000',
             headers: {
                 Authorization: `JWT ${useStore.token}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(updatedFields),
+            body: {
+                priority: res.priority,
+                turn: res.turn,},
         });
         
         if (data.value) {
             console.log("Updated successfully:", data.value);
             getProject(); // Refresh the staff list after the update is successful
-            activeDrawerProjectEdit.value = false;
+            getGroup(res.groupname); // Refresh the staff list after the update is successful
         } else {
             console.log('error',error)
             console.log('errorName',error.value.data)
@@ -308,6 +406,46 @@ async function updateGroupmenber() {
     }
 }
 
+async function AddGroupmenber(groupname) {
+    console.log("Updating AddGroupmenber");
+    errors.value = []
+    for (const member of newAddMembers.value) {
+        try {
+            console.log('addData')
+            console.log('NEWmember to group',member)
+            const { data, pending, refresh, error } = await useFetch('/api/group/', {
+                method: 'POST',
+                baseURL:'http://localhost:8000',
+                headers: {
+                Authorization: `JWT ${useStore.token}`,
+                },
+                body: {
+                    groupname: groupname,
+                    staff: member,
+                }
+            })
+
+            if (data.value) {
+                console.log("New staff added:", data.value)
+                getProject()
+                getGroup(editProject.id)
+                getUser()
+            } else {
+                console.log('error',error)
+                console.log('errorName',error.value.data)
+                errors.value.push(error.value.data)
+            }
+
+        } catch (error) {
+            console.error('Error deleting data:', error);
+        }        
+    }
+}
+
+watch(optionsSelectStaff, (newVal, oldVal) => {
+  newAddMembers.value = newVal.filter(member => !oldGroupMembers.value.includes(member))
+  console.log("New Members: ", newAddMembers);  
+});
 
 onMounted(() => {
     getProject()
@@ -320,7 +458,7 @@ onMounted(() => {
     <n-button dashed type="warning" strong
     @click=switchactiveDrawerProjectAdd
     >
-        新增班種
+        新增組別
     </n-button>
     <table class="table-auto min-w-full">
         <thead class="bg-gray-50">
@@ -336,6 +474,15 @@ onMounted(() => {
                     secondary
                     type='info'
                     @click= editData(res)
+                    >
+                        {{ col.key }}
+                    </n-button>
+
+                    <n-button 
+                    v-if="!res[col.key] && col.key === 'EditGroup'"
+                    secondary
+                    type='info'
+                    @click= editDataGroup(res)
                     >
                         {{ col.key }}
                     </n-button>
@@ -385,17 +532,73 @@ onMounted(() => {
                     更正
                 </n-button>
             </n-form>
-            <n-divider />
+        </n-drawer-content>
+    </n-drawer>
+    <n-drawer v-model:show="activeDrawerGroupEdit" :width="502" :placement="placementDrawer">
+        <n-drawer-content title="專案名稱" closable>
             <n-form>
-                {{ groupStaff }}
-                {{ editProject.id }}
-                {{ optionsStaffValue }}
+                {{ specialGroup }}
+                <n-switch v-model:value="specialGroup">
+                    <template #checked> 
+                    特殊編組
+                    </template>
+                    <template #unchecked>
+                    一般編組
+                    </template>
+                </n-switch>
                 <n-form-item-row label="組員">
-                    <n-transfer ref="transfer" :options="optionsStaff" v-model:value="optionsSelectStaff" />
+                    <n-transfer ref="transfer" v-if="!specialGroup"
+                    :options="optionsStaff" v-model:value="optionsSelectStaff"
+                    source-filterable
+                    />
+                    <n-transfer ref="transfer" v-if="specialGroup"
+                    :options="optionsStaffSpecial" v-model:value="optionsSelectStaff"
+                    source-filterable
+                    />
                 </n-form-item-row>
-                <n-button type="primary" block secondary strong @click="updateData(editProject)">
-                    調整組員
+                <n-button type="primary" block secondary strong @click="AddGroupmenber(editProject.id)">
+                    新增組員
                 </n-button>
+
+                <table class="table-auto min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th v-for="col in columnsGroup" class="px-2 py-4 text-xs font-bold text-gray-500 text-left" scope="col">{{ col.title }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr v-for="(res, rowIndex) in groupStaff">
+                            <td v-for="col in columnsGroup" class="px-2 py-2 text-sm font-medium text-gray-800 whitespace-nowrap">
+                                <n-button 
+                                v-if="!res[col.key] && col.key === 'Edit'"
+                                secondary
+                                type='info'
+                                @click= updateDataGroup(res)
+                                >
+                                    {{ col.title }}
+                                </n-button>
+
+                                <n-button 
+                                v-if="!res[col.key]  && col.title === 'Delete'"
+                                secondary strong type='error'
+                                @click=deleteDataGroup(res,editProject.id)
+                                :disabled="!editingGroup[rowIndex]"
+                                >
+                                    {{ col.key }}
+                                </n-button>
+
+                                <n-switch v-if="col.title==='Delete'" v-model:value="editingGroup[rowIndex]" />
+
+                                <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key!=='staff'">
+                                    <n-input placeholder="0,1,2,3..." v-model:value="res[col.key]" />
+                                </div>
+                                <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key==='staff'">
+                                    {{ res[col.key] }}
+                                </div>                 
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </n-form>
         </n-drawer-content>
     </n-drawer>

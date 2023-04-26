@@ -127,7 +127,9 @@ const options = computed(() => {
 async function getUset () {
     console.log('getUset')
     errors.value = []
-
+    for (const key in result) {
+        delete result[key];
+    }
     const { data, pending, refresh, error } = await useFetch('/api/staff/', {
         method: 'GET',
         baseURL:'http://localhost:8000',
@@ -147,6 +149,12 @@ async function getUset () {
 async function getAUTH () {
     console.log('getAUTH')
     errors.value = []
+    for (const key in resultAUTH) {
+        delete resultAUTH[key];
+    }
+    for (const key in resultAUTH_nonStaff) {
+        delete resultAUTH_nonStaff[key];
+    }
     const { data, pending, refresh, error } = await useFetch('/api/regist/',{
         method: 'GET',
         baseURL:'http://localhost:8000',

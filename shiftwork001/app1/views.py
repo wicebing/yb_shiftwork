@@ -176,11 +176,11 @@ class groupGenericView(generics.ListCreateAPIView):
     queryset = Table_groups.objects.all().order_by('priority', 'turn')
 
     def get_queryset(self):
-        groupname = self.request.query_params.get('groupname', None)
+        groupname_id = self.request.query_params.get('groupname_id', None)
         queryset = Table_groups.objects.all().order_by('priority', 'turn')
 
-        if groupname is not None:
-            groupname_instance = get_object_or_404(Table_groupname, name=groupname)
+        if groupname_id is not None:
+            groupname_instance = get_object_or_404(Table_groupname, id=groupname_id)
             queryset = queryset.filter(groupname=groupname_instance)
 
         return queryset

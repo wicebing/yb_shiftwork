@@ -41,7 +41,9 @@ const editProject = reactive({
 
 async function getProject () {
     console.log('getProject')
-
+    for (const key in result) {
+        delete result[key];
+    }
     try{
         const { data, pending, refresh, error } = await useFetch('/api/project/?status=false&ordering=name', {
             method: 'GET',
