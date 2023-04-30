@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 
 # Create your models here.
@@ -66,7 +66,30 @@ class Table_project(models.Model):
     status = models.BooleanField(verbose_name='狀態',default=False)
     def __str__(self):
         return str(self.id)+self.name+str(self.status)
-    
+
+    def save(self, *args, **kwargs):
+        # Check if the 'turn' attribute has been changed
+        if self.pk is not None:
+            # old_turn = Table_project.objects.get(pk=self.pk).turn
+            # if old_turn != self.turn:
+                super().save(*args, **kwargs)  # Save the updated 'turn' value
+                self.update_related_sequences()  # Update related sequences
+            # else:
+            #     super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
+
+    def update_related_sequences(self):
+        with transaction.atomic():
+            # Get all related 'Table_project_attend' instances
+            related_project_attends = Table_project_attend.objects.filter(project=self)
+
+            for project_attend in related_project_attends:
+                # Update the 'sequence' value
+                project_attend.sequence = project_attend.calculate_sequence(self, project_attend.groupname)
+                project_attend.save()
+
+
 class Table_project_attend(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     project = models.ForeignKey(Table_project,on_delete=models.DO_NOTHING,verbose_name='專案')
@@ -75,6 +98,15 @@ class Table_project_attend(models.Model):
     sequence = models.IntegerField(verbose_name='順序碼', default=0)
     def __str__(self):
         return str(self.id)+self.project.name+self.groupname.name+self.constraint+str(self.sequence) 
+
+    def calculate_sequence(self, project, groupname):
+        priority = groupname.priority
+        project_turn = project.turn
+        groupname_turn = groupname.turn
+        project_mod = project.mod
+
+        sequence = priority * 100 + ((groupname_turn - project_turn) % (project_mod))
+        return sequence
 
 class Table_Shift_Schedule(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')

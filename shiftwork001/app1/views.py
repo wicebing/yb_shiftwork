@@ -212,6 +212,17 @@ class projectAttendGenericView(generics.ListCreateAPIView):
     ordering_fields = ('sequence',)
     search_fields = ('project',)
 
+    def get_queryset(self):
+        project_id = self.request.query_params.get('project_id', None)
+        queryset = Table_project_attend.objects.all().order_by('sequence', )
+
+        if project_id is not None:
+            project_instance = get_object_or_404(Table_project, id=project_id)
+            queryset = queryset.filter(project=project_instance)
+
+        return queryset
+
+
 class projectAttendDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_project_attend.objects.all()
     serializer_class = Table_project_attend_Serializer
@@ -221,7 +232,7 @@ class projectAttendDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         project = instance.project
         instance.delete()
-        attend_count = Table_project_attend.objects.filter(project=project, groupname__priority=1).count()
+        attend_count = Table_project_attend.objects.filter(project=project, groupname__priority=9).count()
         project.mod = attend_count
         project.save()
 

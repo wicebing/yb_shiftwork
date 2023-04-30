@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.db.models import F, ExpressionWrapper, IntegerField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import *
 
@@ -128,29 +129,57 @@ class Table_project_Serializer(serializers.ModelSerializer):
         return value
 
 class Table_project_attend_Serializer(serializers.ModelSerializer):
+    groupname_name = serializers.StringRelatedField(source='groupname.name', read_only=True)
+    group_members = serializers.SerializerMethodField()
+
     class Meta:
         model = Table_project_attend
-        fields = '__all__'
+        fields = '__all__' 
+        extra_fields = ['groupname_name', 'group_members']
 
-    def calculate_sequence(self, project, groupname):
-        priority = groupname.priority
-        project_turn = project.turn
-        groupname_turn = groupname.turn
-        project_mod = project.mod
+    # def get_group_members(self, obj):
+    #     group_members = Table_staff.objects.filter(table_groups__groupname=obj.groupname)
+    #     return Table_staff_Serializer(group_members, many=True).data
+    
+    def get_group_members(self, obj):
+        project = obj.project
+        K = project.turn
 
-        sequence = priority * 100 + ((groupname_turn + project_turn) % (project_mod+1))
-        return sequence
+        # Annotate the queryset with the calculated value
+        group_members = Table_groups.objects.filter(
+            groupname=obj.groupname
+        ).annotate(
+            order_value=ExpressionWrapper(
+                100 * F('priority') + ((F('turn') + K) % F('groupname__mod')),
+                output_field=IntegerField()
+            )
+        ).order_by('order_value')  # Order the queryset using the annotated value
+
+        # Serialize the queryset
+        return Table_groups_Serializer(group_members, many=True).data
+ 
+    # def calculate_sequence(self, project, groupname):
+    #     priority = groupname.priority
+    #     project_turn = project.turn
+    #     groupname_turn = groupname.turn
+    #     project_mod = project.mod
+
+    #     if project_mod == 0:
+    #         sequence = priority * 100 + ((groupname_turn + project_turn) % (1))
+    #     else:
+    #         sequence = priority * 100 + ((groupname_turn + project_turn) % (project_mod))
+    #     return sequence
 
     def update_project_mod(self, project):
-        total_data_count = Table_project_attend.objects.filter(project=project, groupname__priority=1).count()
+        total_data_count = Table_project_attend.objects.filter(project=project, groupname__priority=9).count()
         project.mod = total_data_count
         project.save()
 
     def create(self, validated_data):
         project = validated_data['project']
-        groupname = validated_data['groupname']
+        # groupname = validated_data['groupname']
 
-        validated_data['sequence'] = self.calculate_sequence(project, groupname)
+        # validated_data['sequence'] = self.calculate_sequence(project, groupname)
         instance = super().create(validated_data)
         self.update_project_mod(project)
 
