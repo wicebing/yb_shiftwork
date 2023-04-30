@@ -191,7 +191,39 @@ class groupDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
 
+    def get_largest_turn_with_priority_1(self, groupname):
+        largest_turn = Table_groups.objects.filter(groupname=groupname, priority=1).order_by('-turn').first()
+        return 1+largest_turn.turn if largest_turn else 0
 
+    def perform_destroy(self, instance):
+        groupname = instance.groupname
+        instance.delete()
+        groupname.mod = self.get_largest_turn_with_priority_1(groupname)
+        groupname.save()
+
+class projectAttendGenericView(generics.ListCreateAPIView):
+    queryset = Table_project_attend.objects.all()
+    serializer_class = Table_project_attend_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    filter_fields = ('project',)
+    ordering_fields = ('sequence',)
+    search_fields = ('project',)
+
+class projectAttendDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_project_attend.objects.all()
+    serializer_class = Table_project_attend_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+    def perform_destroy(self, instance):
+        project = instance.project
+        instance.delete()
+        attend_count = Table_project_attend.objects.filter(project=project, groupname__priority=1).count()
+        project.mod = attend_count
+        project.save()
 
 
 

@@ -13,15 +13,12 @@ onMounted(() => {
   <div class="py-2 px-2" v-if=useStore.isAuthenticated>
     <div class="space-y-4">
         <n-tabs type="segment"
-        default-value="allProject">
-            <n-tab-pane name="allProject" tab="專案總覽">
-                <ShiftProjects />
+        default-value="allGroup">
+            <n-tab-pane name="allGroup" tab="填班組別">
+                <Groupname />
             </n-tab-pane>
             <n-tab-pane name="allPosition" tab="班種總覽">
                 <PositionProjects />
-            </n-tab-pane>
-            <n-tab-pane name="allGroup" tab="填班組別">
-                <Groupname />
             </n-tab-pane>
         </n-tabs>
     </div>

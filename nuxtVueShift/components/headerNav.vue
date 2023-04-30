@@ -16,12 +16,22 @@ const options= ref([
           }
         },
         {
-          label: '專案',
+          label: '班種組別',
           key: 'shiftworks',
           props: {
             onClick: () => {
             //   message.success('Good!')
             useRoute.push('/shiftworks')
+            }
+          }
+        },
+        {
+          label: '專案',
+          key: 'projects',
+          props: {
+            onClick: () => {
+            //   message.success('Good!')
+            useRoute.push('/projects')
             }
           }
         },

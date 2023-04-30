@@ -40,21 +40,39 @@ class User_Serializer(serializers.ModelSerializer):
     #                                    'blank': '帳號不能為空',
     #                                    'max_length': '帳號不能超過20個字',
     #                                    }) 
- 
+
 class Table_groups_Serializer(serializers.ModelSerializer):
     # groupname = serializers.StringRelatedField()
     staff_name = serializers.StringRelatedField(source='staff.name', read_only=True)
+
+    def get_largest_turn_with_priority_1(self, groupname):
+        largest_turn = Table_groups.objects.filter(groupname=groupname, priority=1).order_by('-turn').first()
+        return 1+largest_turn.turn if largest_turn else 0
 
     class Meta:
         model = Table_groups
         fields = '__all__'
         extra_fields = ['staff_name']
 
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        groupname = instance.groupname
+        groupname.mod = self.get_largest_turn_with_priority_1(groupname)
+        groupname.save()
+        return instance
+
+    def update(self, instance, validated_data):
+        updated_instance = super().update(instance, validated_data)
+        groupname = updated_instance.groupname
+        groupname.mod = self.get_largest_turn_with_priority_1(groupname)
+        groupname.save()
+        return updated_instance
+
 class Table_groupname_Serializer(serializers.ModelSerializer):
     groups = Table_groups_Serializer(source='table_groups_set',many=True, read_only=True)
     class Meta:
         model = Table_groupname
-        fields = ['id','name','priority', 'turn','groups']
+        fields = ['id','name','priority','turn','mod','groups']
     def validate_name(self, value):
         if Table_groupname.objects.filter(name=value).exists():
             raise serializers.ValidationError("名稱已存在")
@@ -108,6 +126,41 @@ class Table_project_Serializer(serializers.ModelSerializer):
         if Table_project.objects.filter(name=value).exists():
             raise serializers.ValidationError("專案名稱已存在")
         return value
+
+class Table_project_attend_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_project_attend
+        fields = '__all__'
+
+    def calculate_sequence(self, project, groupname):
+        priority = groupname.priority
+        project_turn = project.turn
+        groupname_turn = groupname.turn
+        project_mod = project.mod
+
+        sequence = priority * 100 + ((groupname_turn + project_turn) % (project_mod+1))
+        return sequence
+
+    def update_project_mod(self, project):
+        total_data_count = Table_project_attend.objects.filter(project=project, groupname__priority=1).count()
+        project.mod = total_data_count
+        project.save()
+
+    def create(self, validated_data):
+        project = validated_data['project']
+        groupname = validated_data['groupname']
+
+        validated_data['sequence'] = self.calculate_sequence(project, groupname)
+        instance = super().create(validated_data)
+        self.update_project_mod(project)
+
+        return instance
+
+
+
+
+
+
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):

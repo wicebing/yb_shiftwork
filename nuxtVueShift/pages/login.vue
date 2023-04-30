@@ -15,7 +15,6 @@ const errors = ref([])
 const repeatPW = ref('')
 
 const useStore = useUserStore()
-const router = useRouter()
 
 async function commitSignup () {
     console.log('commitSignup')
@@ -77,7 +76,7 @@ async function commitLogin () {
         useStore.setToken(data.value.access)
         console.log('useStore',useStore.token,useStore.$state.isAuthenticated)
         getCurrentUser()
-        router.push('/')
+        navigateTo('/')
     }
 
 }

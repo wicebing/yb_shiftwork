@@ -10,6 +10,14 @@ const columns = ref([
       key: 'name'
     },
     {
+      title: '順序加成值',
+      key: 'turn'
+    },
+    {
+      title: 'mod',
+      key: 'mod'
+    },
+    {
       title: 'Edit',
       key: 'Edit',
     },
@@ -27,15 +35,21 @@ const errors = ref([])
 
 const newProject = reactive({
     name: "",
+    turn: null,
+    mod: null,
 })
 
 const originalProject = reactive({
     name: "",
+    turn: null,
+    mod: null,
     status: null,
 });
 
 const editProject = reactive({
     name: "",
+    turn: null,
+    mod: null,
     status: null,
 })
 
@@ -154,6 +168,11 @@ async function updateData() {
     activeDrawerProjectEdit.value = false;
 }
 
+async function toProjectID(id) {
+    navigateTo(`/projects/${id}`)
+}
+
+
 
 onMounted(() => {
     getProject()
@@ -196,9 +215,15 @@ onMounted(() => {
 
                     <n-switch v-if="col.title==='Delete'" v-model:value="editing[rowIndex]" />
 
-                    <div v-if=res[col.key]>
+                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key !== 'name'">
                         {{ res[col.key] }}
-                    </div>                              
+                    </div>
+                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key === 'name'">
+                        <n-button dashed
+                        @click="toProjectID(res.id)">
+                            {{ res[col.key] }}
+                        </n-button>
+                    </div>                          
                 </td>
             </tr>
         </tbody>
@@ -208,6 +233,9 @@ onMounted(() => {
             <n-form>
                 <n-form-item-row label="專案名稱">  
                     <n-input placeholder="年-月(註記)" v-model:value="editProject.name" />
+                </n-form-item-row>
+                <n-form-item-row label="順序加成值">
+                    <n-input placeholder="1,2,3..." v-model:value="editProject.turn" />
                 </n-form-item-row>
                 <n-form-item-row label="已完成"> 
                     {{ editProject.status }}
@@ -224,6 +252,9 @@ onMounted(() => {
             <n-form>
                 <n-form-item-row label="專案名稱">
                     <n-input placeholder="年-月(註記)" v-model:value="newProject.name" />
+                </n-form-item-row>
+                <n-form-item-row label="順序加成值">
+                    <n-input placeholder="1,2,3..." v-model:value="newProject.turn" />
                 </n-form-item-row>
                 <div v-if="errors.length" class="mb-6 py-4 px-6 bg-rose-400 rounded-xl">
                     <p v-for="error in errors" :key="error">

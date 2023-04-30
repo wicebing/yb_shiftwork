@@ -17,6 +17,10 @@ const columns = ref([
       key: 'turn'
     },
     {
+      title: 'mod',
+      key: 'mod'
+    },
+    {
       title: '組員',
       key: 'groups'
     },
@@ -92,6 +96,7 @@ const newProject = reactive({
     name: "",
     priority: "",
     turn: "",
+    mod: "",
     groups: "",
 })
 
@@ -100,6 +105,7 @@ const originalProject = reactive({
     name: "",
     priority: "",
     turn: "",
+    mod: "",
     groups: "",
 });
 
@@ -108,6 +114,7 @@ const editProject = reactive({
     name: "",
     priority: "",
     turn: "",
+    mod: "",
     groups: "",
 })
 

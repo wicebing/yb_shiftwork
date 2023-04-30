@@ -43,6 +43,8 @@ urlpatterns = [
     path('api/groupname/<pk>/', views.groupnameDetailGenericView.as_view()),
     path('api/group/', views.groupGenericView.as_view()),
     path('api/group/<pk>/', views.groupDetailGenericView.as_view()),
+    path('api/projectAttend/', views.projectAttendGenericView.as_view()),
+    path('api/projectAttend/<pk>/', views.projectAttendDetailGenericView.as_view()),
 
 
     path('docs/', include_docs_urls(title='My API title')),

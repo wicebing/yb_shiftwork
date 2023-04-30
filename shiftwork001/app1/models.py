@@ -31,6 +31,7 @@ class Table_groupname(models.Model):
     name = models.CharField(max_length=100,verbose_name='群組名稱')
     priority = models.IntegerField(verbose_name='優先碼', default=0)
     turn = models.IntegerField(verbose_name='順序碼', default=0)
+    mod = models.IntegerField(verbose_name='同餘', default=0)
     def __str__(self):
         return str(self.id)+self.name
     
@@ -60,9 +61,20 @@ class Table_shift(models.Model):
 class Table_project(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='專案名稱')
+    turn = models.IntegerField(verbose_name='順序碼', default=0)
+    mod = models.IntegerField(verbose_name='同餘', default=0)
     status = models.BooleanField(verbose_name='狀態',default=False)
     def __str__(self):
         return str(self.id)+self.name+str(self.status)
+    
+class Table_project_attend(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    project = models.ForeignKey(Table_project,on_delete=models.DO_NOTHING,verbose_name='專案')
+    groupname = models.ForeignKey(Table_groupname,on_delete=models.DO_NOTHING,verbose_name='群組名稱')
+    constraint = models.CharField(max_length=100,verbose_name='限制代碼', null=True)
+    sequence = models.IntegerField(verbose_name='順序碼', default=0)
+    def __str__(self):
+        return str(self.id)+self.project.name+self.groupname.name+self.constraint+str(self.sequence) 
 
 class Table_Shift_Schedule(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
