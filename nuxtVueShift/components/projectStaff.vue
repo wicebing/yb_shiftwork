@@ -49,8 +49,8 @@ const columns = ref([
       key: 'group_members'
     },
     {
-      title: '填班限制',
-      key: 'constraint'
+      title: '填班規則',
+      key: 'related_rules'
     },
     {
       title: 'sequence',
@@ -68,6 +68,10 @@ const columns = ref([
 
 function formatGroups(groups) {
   return groups.map((group) => `${group.staff_name}-${group.staff}`);
+}
+
+function formatRule(related_rules) {
+  return related_rules.map((related_rules) => `${related_rules.description}`);
 }
 
 const optionsGroup = computed(() => {
@@ -146,7 +150,7 @@ async function getGroup () {
 async function editData(row) {
     console.log("Row:", row)
     console.log("Rowid:", row.id)
-    await getGroup(row.id)
+    await getGroup()
     Object.assign(editProject, row)
     console.log("editProject:", editProject)
     updateData()
@@ -194,9 +198,7 @@ async function AddGroup() {
 
             if (data.value) {
                 console.log("New staff added:", data.value)
-                getProject()
-                getGroup(editProject.id)
-                getUser()
+
             } else {
                 console.log('error',error)
                 console.log('errorName',error.value.data)
@@ -206,6 +208,9 @@ async function AddGroup() {
         } catch (error) {
             console.error('Error deleting data:', error);
         }        
+        getProject()
+        getGroup()
+        getUser()
     }
 }
 
@@ -295,9 +300,14 @@ onMounted(() => {
                     <n-input placeholder="..." v-model:value="res[col.key]" v-if="col.key==='constraint'" />
 
                     <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key!=='group_members'">
-                        <div v-if="col.key!=='constraint'">
+                        <div v-if="col.key!=='related_rules'">
                             {{ res[col.key] }}
-                        </div>         
+                        </div>    
+                        <div v-if="col.key==='related_rules'">
+                            <tr v-for="member in formatRule(res[col.key])">
+                                <td>{{ member }}</td>
+                            </tr>
+                        </div>
                     </div>
                     <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key==='group_members'">
                         <tr v-for="member in formatGroups(res[col.key])">

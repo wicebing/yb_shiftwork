@@ -20,6 +20,9 @@ onMounted(() => {
             <n-tab-pane name="allPosition" tab="班種總覽">
                 <PositionProjects />
             </n-tab-pane>
+            <n-tab-pane name="allRules" tab="填班規則">
+                <rules />
+            </n-tab-pane>
         </n-tabs>
     </div>
   </div>

@@ -128,18 +128,41 @@ class Table_project_Serializer(serializers.ModelSerializer):
             raise serializers.ValidationError("專案名稱已存在")
         return value
 
+class Table_rule_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_rule
+        fields = '__all__'
+    def validate_name(self, value):
+        if Table_rule.objects.filter(name=value).exists():
+            raise serializers.ValidationError("規則名稱已存在")
+        return value
+
+class Table_project_attend_rule_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_project_attend_rule
+        fields = '__all__'
+
+
 class Table_project_attend_Serializer(serializers.ModelSerializer):
     groupname_name = serializers.StringRelatedField(source='groupname.name', read_only=True)
     group_members = serializers.SerializerMethodField()
+    related_rules = serializers.SerializerMethodField()
 
     class Meta:
         model = Table_project_attend
         fields = '__all__' 
-        extra_fields = ['groupname_name', 'group_members']
+        extra_fields = ['groupname_name', 'group_members', 'related_rules']
 
-    # def get_group_members(self, obj):
-    #     group_members = Table_staff.objects.filter(table_groups__groupname=obj.groupname)
-    #     return Table_staff_Serializer(group_members, many=True).data
+    def get_related_rules(self, obj):
+        related_rules = Table_project_attend_rule.objects.filter(project_attend=obj).order_by('rule_id')
+        rules = [
+            {
+                'name': rule_obj.rule.name,
+                'description': rule_obj.rule.description
+            }
+            for rule_obj in related_rules
+        ]
+        return rules
     
     def get_group_members(self, obj):
         project = obj.project

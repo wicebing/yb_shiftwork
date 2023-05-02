@@ -45,7 +45,12 @@ urlpatterns = [
     path('api/group/<pk>/', views.groupDetailGenericView.as_view()),
     path('api/projectAttend/', views.projectAttendGenericView.as_view()),
     path('api/projectAttend/<pk>/', views.projectAttendDetailGenericView.as_view()),
+    path('api/rule/', views.ruleGenericView.as_view()),
+    path('api/rule/<pk>/', views.ruleDetailGenericView.as_view()),
+    path('api/projectAttendRule/', views.projectAttendRuleGenericView.as_view()),
+    path('api/projectAttendRule/<pk>/', views.projectAttendRuleDetailGenericView.as_view()),
 
+    
 
     path('docs/', include_docs_urls(title='My API title')),
     path('token/', views.MyObtainTokenPairView.as_view(), name='token_obtain_pair'),

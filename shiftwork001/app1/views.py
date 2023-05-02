@@ -201,6 +201,35 @@ class groupDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
         groupname.mod = self.get_largest_turn_with_priority_1(groupname)
         groupname.save()
 
+class ruleGenericView(generics.ListCreateAPIView):
+    queryset = Table_rule.objects.all()
+    serializer_class = Table_rule_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    filter_fields = ('name',)
+
+class ruleDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_rule.objects.all()
+    serializer_class = Table_rule_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class projectAttendRuleGenericView(generics.ListCreateAPIView):
+    queryset = Table_project_attend_rule.objects.all()
+    serializer_class = Table_project_attend_rule_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+
+class projectAttendRuleDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_project_attend_rule.objects.all()
+    serializer_class = Table_project_attend_rule_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
 class projectAttendGenericView(generics.ListCreateAPIView):
     queryset = Table_project_attend.objects.all()
     serializer_class = Table_project_attend_Serializer

@@ -97,7 +97,7 @@ class Table_project_attend(models.Model):
     constraint = models.CharField(max_length=100,verbose_name='限制代碼', null=True)
     sequence = models.IntegerField(verbose_name='順序碼', default=0)
     def __str__(self):
-        return str(self.id)+self.project.name+self.groupname.name+self.constraint+str(self.sequence) 
+        return str(self.id)
 
     def calculate_sequence(self, project, groupname):
         priority = groupname.priority
@@ -105,8 +105,25 @@ class Table_project_attend(models.Model):
         groupname_turn = groupname.turn
         project_mod = project.mod
 
-        sequence = priority * 100 + ((groupname_turn - project_turn) % (project_mod))
+        if project_mod == 0:
+            sequence = priority * 100 + ((groupname_turn - project_turn) % (project_mod + 1))
+        else:
+            sequence = priority * 100 + ((groupname_turn - project_turn) % (project_mod))
         return sequence
+
+class Table_rule(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    name = models.CharField(max_length=100,verbose_name='規則名稱')
+    description = models.CharField(max_length=1000,verbose_name='規則描述')
+    def __str__(self):
+        return str(self.id)+self.name+self.description
+    
+class Table_project_attend_rule(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    project_attend = models.ForeignKey(Table_project_attend,on_delete=models.DO_NOTHING,verbose_name='專案群組')
+    rule = models.ForeignKey(Table_rule,on_delete=models.DO_NOTHING,verbose_name='規則')
+    def __str__(self):
+        return str(self.id)
 
 class Table_Shift_Schedule(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
