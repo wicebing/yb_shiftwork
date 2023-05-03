@@ -14,11 +14,18 @@ const props = defineProps({
 const result = reactive ({})
 const errors = ref([])
 const editing = reactive([])
+const editingRules = reactive([])
 const resultGroups = reactive ({})
 const optionsSelectGroups = ref([]);
 const oldSelectGroups = ref([]);
 const newAddGroup = ref([]);
-const activeDrawerProjectEdit = ref(false);
+const activeDrawerRuleEdit = ref(false);
+const resultRules = reactive ({})
+const optionsSelectRules = ref([]);
+const oldSelectRules = ref([]);
+const resultAttendRule = reactive ({})
+const project_attend_row = reactive ({});
+const newAddRule = ref([]);
 
 const originalProject = reactive({
     id: "",
@@ -58,7 +65,18 @@ const columns = ref([
     },
     {
       title: 'Edit',
-      key: '更新',
+      key: 'Edit',
+    },
+    {
+      title: 'Delete',
+      key: '刪',
+    }
+])
+
+const columnsRule = ref([
+    {
+      title: '規則內容',
+      key: 'rule_desscript'
     },
     {
       title: 'Delete',
@@ -87,6 +105,21 @@ const optionsGroup = computed(() => {
         };
     });
 });
+
+const optionsRules = computed(() => {
+    console.log('optionsRules', resultRules);
+
+    return Object.values(resultRules).map((Group) => {
+        const inoldSelectStaff = oldSelectRules.value.includes(Group.id);
+
+        return {
+            label: Group.description,
+            value: Group.id,
+            disabled: inoldSelectStaff, // set disabled to true if groups array has elements or if the user is in optionsSelectStaff, otherwise false
+        };
+    });
+});
+
 
 async function getProject () {
     console.log('getProjectAttend')
@@ -146,14 +179,74 @@ async function getGroup () {
     }
 }
 
+async function getRules () {
+    console.log('getRules')
+    errors.value = []
+    for (const key in resultRules) {
+        delete resultGroups[key];
+    }
+    try {
+        const { data, pending, refresh, error } = await useFetch('/api/rule/', {
+            method: 'GET',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}` 
+            }
+        })
+
+        if (data.value) {
+            console.log('data resultRules',data.value)
+            Object.assign(resultRules, data.value.results)        
+        } else {
+            console.log('error resultRules',error)
+            errors.value.push(error)
+            errors.value.push(data.value.results)
+        }
+    } catch {
+        console.log('error Group',error)
+        errors.value.push(error)
+    }
+}
+
+async function getProjectAttendRule (row) {
+    console.log('getProjectAttendRule')
+    console.log('optionsSelectRules',optionsSelectRules)
+    console.log('oldSelectRules',oldSelectRules)
+    for (const key in resultAttendRule) {
+        delete resultAttendRule[key];
+    }
+    try{
+        const { data, pending, refresh, error } = await useFetch(`/api/projectAttendRule/?project_attend=${row.id}`, {
+            method: 'GET',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}` 
+            }
+        })
+
+        if (data.value) {
+            console.log('data getProjectAttendRule',data.value)
+
+            Object.assign(resultAttendRule, data.value.results)
+            optionsSelectRules.value = data.value.results.map((group) => group.rule) // update optionsSelectStaff with the staff ids   
+            oldSelectRules.value = data.value.results.map((group) => group.rule) // update optionsSelectStaff with the staff ids
+            console.log('result getProjectAttendRule',resultAttendRule)
+        } else {
+            console.log('error',error)
+        }
+    } catch (err) {
+        console.log('err',err)
+    }
+}
+
 
 async function editData(row) {
-    console.log("Row:", row)
+    // console.log("Row:", row)
     console.log("Rowid:", row.id)
-    await getGroup()
-    Object.assign(editProject, row)
-    console.log("editProject:", editProject)
-    updateData()
+    Object.assign(project_attend_row, row)
+    // console.log("Row project_attend_row:", project_attend_row)
+    await getProjectAttendRule(row)
+    activeDrawerRuleEdit.value = true
 }
 
 async function deleteData(row) {
@@ -214,38 +307,61 @@ async function AddGroup() {
     }
 }
 
-async function updateData() {
-    console.log("Updating group data:", editProject);
-    const updatedFields = {}
-    for (const key in editProject) {
+async function AddAttendRule(project_attend_row) {
+    console.log("Updating AddAttendRule");
+    errors.value = []
+    for (const member of newAddRule.value) {
+        try {
+            console.log('addData')
+            console.log('NEWrule to rule',member)
+            const { data, pending, refresh, error } = await useFetch('/api/projectAttendRule/', {
+                method: 'POST',
+                baseURL:'http://localhost:8000',
+                headers: {
+                Authorization: `JWT ${useStore.token}`,
+                },
+                body: {
+                    project_attend: project_attend_row.id,
+                    rule: member,
+                }
+            })
 
-        if (editProject[key] !== originalProject[key]) {
-            updatedFields[key] = editProject[key];
+            if (data.value) {
+                console.log("New staff added:", data.value)
+                getProjectAttendRule(project_attend_row)
+                getProject()
+            } else {
+                console.log('error',error)
+                console.log('errorName',error.value.data)
+                errors.value.push(error.value.data)
+            }
+
+        } catch (error) {
+            console.error('Error deleting data:', error);
         }        
     }
-    console.log("Updating updatedFields:", JSON.stringify(updatedFields));
+}
+
+async function deleteRuleData(row,project_attend_row) {
     try {
-        const { data, pending, refresh, error } = await useFetch(`/api/projectAttend/${editProject.id}/`, {
-            method: 'PATCH',
-            baseURL: 'http://localhost:8000',
-            headers: {
-                Authorization: `JWT ${useStore.token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedFields),
-        });
-        
-        if (data.value) {
-            console.log("Updated successfully:", data.value);
-            getProject(); // Refresh the staff list after the update is successful
-        } else {
-            console.log('error',error)
-            console.log('errorName',error.value.data)
-            errors.value.push(error.value.data)
-        }
+        console.log('deleteRuleData', row)
+        const { data, pending, refresh, error } = await useFetch(`/api/projectAttendRule/${row.id}/`, {
+        method: 'DELETE',
+        baseURL: 'http://localhost:8000',
+        headers: {
+            Authorization: `JWT ${useStore.token}`,
+        },
+        })
+        console.log('data',data.value)
+        console.log('Deleted successfully')
+        console.log('delete project_attend_row', project_attend_row)
+        getProjectAttendRule(project_attend_row)
+        getProject()
+
     } catch (error) {
-        console.error('Error updating data:', error);
+        console.error('Error deleting data:', error);
     }
+    editingRules = reactive([])
 }
 
 watch(optionsSelectGroups, (newVal, oldVal) => {
@@ -253,15 +369,21 @@ watch(optionsSelectGroups, (newVal, oldVal) => {
     console.log("New Groups: ", newAddGroup);  
 });
 
+watch(optionsSelectRules, (newVal, oldVal) => {
+    newAddRule.value = newVal.filter(member => !oldSelectRules.value.includes(member))
+    console.log("New Rule: ", newAddRule);  
+});
+
 onMounted(() => {
     getProject()
     getGroup()
+    getRules()
 })
 
 </script>
 <!-- //v-if=useStore.is_superuser -->
 <template>
-    <n-transfer ref="transfer" v-if="!specialGroup"
+    <n-transfer ref="transfer"
         :options="optionsGroup" v-model:value="optionsSelectGroups"
         source-filterable
         />
@@ -318,6 +440,60 @@ onMounted(() => {
             </tr>
         </tbody>
     </table>
+
+    <n-drawer v-model:show="activeDrawerRuleEdit" :width="502" :placement="placementDrawer">
+        <n-drawer-content title="規則編輯" closable>
+            <n-form>
+                <n-form-item-row label="規則清單">
+                    <n-transfer ref="transfer"
+                    :options="optionsRules" v-model:value="optionsSelectRules"
+                    source-filterable
+                    />
+                </n-form-item-row>
+                <n-button type="primary" block secondary strong @click="AddAttendRule(project_attend_row)">
+                    新增規則
+                </n-button>
+                <table class="table-auto min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th v-for="col in columnsRule" class="px-2 py-4 text-xs font-bold text-gray-500 text-left" scope="col">{{ col.title }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr v-for="(res, rowIndex) in resultAttendRule">
+                            <td v-for="col in columnsRule" class="px-2 py-2 text-sm font-medium text-gray-800 whitespace-nowrap">
+                                <n-button 
+                                v-if="!res[col.key] && col.key === 'Edit'"
+                                secondary
+                                type='info'
+                                @click= null
+                                >
+                                    {{ col.title }}
+                                </n-button>
+
+                                <n-button 
+                                v-if="!res[col.key]  && col.title === 'Delete'"
+                                secondary strong type='error'
+                                @click=deleteRuleData(res,project_attend_row)
+                                :disabled="!editingRules[rowIndex]"
+                                >
+                                    {{ col.key }}
+                                </n-button>
+
+                                <n-switch v-if="col.title==='Delete'" v-model:value="editingRules[rowIndex]" />
+
+                                <div v-if="res[col.key] !== null && res[col.key] !== undefined">
+                                    {{ res[col.key] }}
+                                </div>                 
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </n-form>
+        </n-drawer-content>
+    </n-drawer>
+
 </template>
 
 <style scoped>

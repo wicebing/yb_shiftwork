@@ -138,10 +138,12 @@ class Table_rule_Serializer(serializers.ModelSerializer):
         return value
 
 class Table_project_attend_rule_Serializer(serializers.ModelSerializer):
+    rule_desscript = serializers.StringRelatedField(source='rule.description', read_only=True)
+    
     class Meta:
         model = Table_project_attend_rule
         fields = '__all__'
-
+        extra_fields = ['rule_desscript', ]
 
 class Table_project_attend_Serializer(serializers.ModelSerializer):
     groupname_name = serializers.StringRelatedField(source='groupname.name', read_only=True)

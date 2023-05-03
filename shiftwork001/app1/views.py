@@ -208,7 +208,7 @@ class ruleGenericView(generics.ListCreateAPIView):
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
     # pagination_class = MyPageNumberPagination
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
-    filter_fields = ('name',)
+    ordering_fields = ('id',)
 
 class ruleDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_rule.objects.all()
@@ -223,6 +223,16 @@ class projectAttendRuleGenericView(generics.ListCreateAPIView):
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
     # pagination_class = MyPageNumberPagination
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+
+    def get_queryset(self):
+        project_attend_id = self.request.query_params.get('project_attend', None)
+        queryset = Table_project_attend_rule.objects.all()
+
+        if project_attend_id is not None:
+            project_attend_instance = get_object_or_404(Table_project_attend, id=project_attend_id)
+            queryset = queryset.filter(project_attend=project_attend_instance)
+        return queryset
+
 
 class projectAttendRuleDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_project_attend_rule.objects.all()
