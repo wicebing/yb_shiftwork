@@ -12,6 +12,7 @@ const props = defineProps({
     }
 })
 
+const calendar = reactive([])
 const dateRange = ref()
 const paneName = ref('selectDate')
 const startDate = ref()
@@ -20,34 +21,21 @@ const resultShift = reactive ({})
 const optionsSelectShift = ref([]);
 const result = reactive ({})
 const errors = ref([])
-const daysOfWeek = ref(["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"])
+const daysOfWeek = ref(['日', '一', '二', '三', '四', '五', '六'])
+const daysOfWeek_1 = ref(['一', '二', '三', '四', '五', '六','日'])
+const dayOfWeekStart = ref(false)
+
 const weekStartsOn = ref(0) // 0 for Sunday, 1 for Monday
 const activeDrawerScheduleEdit = ref(false)
 const editScheduleDate = ref()
 const editScheduleItem = reactive([])
 const editingItem = reactive([])
-
+const switchDateDelete = ref(false)
 
 const columnsScheduleItem = ref([
     {
-      title: 'id',
-      key: 'id'
-    },
-    {
-      title: 'shift_name',
+      title: '班種名稱',
       key: 'shift_name'
-    },
-    {
-      title: 'date',
-      key: 'date'
-    },
-    {
-      title: 'shift',
-      key: 'shift'
-    },
-    {
-      title: 'project',
-      key: 'project'
     },
     {
       title: 'Delete',
@@ -66,8 +54,17 @@ const optionsShift = computed(() => {
     });
 });
 
-const transformedResult = computed(() => {
-    const calendar = [];
+function changeWeekStartsOn() {
+    weekStartsOn.value = dayOfWeekStart.value ? 1 : 0;
+    daysOfWeek.value = dayOfWeekStart.value ? daysOfWeek_1.value : daysOfWeek.value;
+    transformedResult()
+}
+
+function transformedResult() {
+    for (const key in calendar) {
+        delete calendar[key];
+    } 
+
     const sortedDates = Object.keys(result);
 
     for (const key of sortedDates) {
@@ -81,17 +78,18 @@ const transformedResult = computed(() => {
         if (!calendar[weekOfMonth]) {
         calendar[weekOfMonth] = new Array(7).fill(null);
         }
-
         if (!calendar[weekOfMonth][adjustedDay]) {
         calendar[weekOfMonth][adjustedDay] = {
             date_name: item.date_name,
+            holiday: item.holiday,
+            date_id: item.date,
             items: []
         };
         }
         calendar[weekOfMonth][adjustedDay].items.push(item);
     }
-    return calendar;
-})
+    // return calendar;
+}
 
 function formatDate(date) {
     const year = date.getFullYear();
@@ -124,6 +122,24 @@ async function submitDateRange() {
             })
         })
         paneName.value = 'selecShift'
+    } catch (error) {
+        console.error('Error submitting date range:', error)
+    }
+}
+
+async function updateDateHoliday(day) { 
+    console.log('updateDateHoliday', day)
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/date/${day.date_id}/`, {
+            method: 'PATCH',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+            },
+            body: JSON.stringify({
+                holiday: day.holiday
+            })
+        })
     } catch (error) {
         console.error('Error submitting date range:', error)
     }
@@ -199,6 +215,9 @@ async function getSchedule () {
             console.log('data getSchedule',data.value)
             Object.assign(result, data.value.results)
             console.log('result getSchedule',result)
+            transformedResult()
+            console.log('result calender',calendar )
+            paneName.value = 'showProjectShift'
         } else {
             console.log('error',error)
         }
@@ -210,21 +229,45 @@ async function getSchedule () {
 async function deleteData(row) {
     try {
         console.log('deleteData', row)
-        const { data, pending, refresh, error } = await useFetch(`/api/project/${row.id}`, {
+        const { data, pending, refresh, error } = await useFetch(`/api/schedule/${row.id}/`, {
         method: 'DELETE',
         baseURL: 'http://localhost:8000',
         headers: {
             Authorization: `JWT ${useStore.token}`,
         },
         })
-
-        console.log('deleteData', row)
         console.log('Deleted successfully')
         console.log('Error: ', error.value)
+        // Find the index of the item in editScheduleItem and remove it
+        const itemIndex = editScheduleItem.findIndex(item => item.id === row.id);
+        if (itemIndex !== -1) {
+            editScheduleItem.splice(itemIndex, 1);
+        }
+        getSchedule()
     } catch (error) {
         console.error('Error deleting data:', error);
     }
-    getProject()
+}
+
+async function deleteAllDateData(dateRes) {
+    for (const res in dateRes) {
+        const row = dateRes[res]
+        try {
+            const { data, pending, refresh, error } = await useFetch(`/api/schedule/${row.id}/`, {
+            method: 'DELETE',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+            },
+            })
+            console.log('Deleted successfully')
+            console.log('Error: ', error.value)
+        } catch (error) {
+            console.error('Error deleting data:', error);
+        }        
+    }
+    getSchedule()
+    activeDrawerScheduleEdit.value = false
 }
 
 onMounted(() => {
@@ -239,9 +282,9 @@ onMounted(() => {
         專案起訖日期：<span class="text-pink-600 font-semibold"> {{ startDate }} </span> ~ 
         <span class="text-pink-600 font-semibold"> {{ endDate }} </span>
     </div>
-    
+    {{ defaultTab }}
     <n-tabs
-    :default-value="result ? 'showProjectShift' : 'selectDate'"
+    :default-value="selectDate"
     v-model:value="paneName">
         <n-tab-pane name="selectDate" tab="Step 1 日期範圍">
             <n-form>
@@ -266,6 +309,14 @@ onMounted(() => {
             </n-button>
         </n-tab-pane>
         <n-tab-pane name="showProjectShift" tab="Step 3 班表" v-if="result">
+            <n-switch v-model:value="dayOfWeekStart" @update:value="changeWeekStartsOn">
+                <template #checked>
+                星期一為第一天
+                </template>
+                <template #unchecked>
+                星期日為第一天
+                </template>
+            </n-switch>
             <table class="table-auto min-w-full border border-slate-300">
                 <thead class="bg-gray-50 border border-slate-300">
                     <tr>
@@ -275,31 +326,44 @@ onMounted(() => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="week in transformedResult" class="bg-gray-50 border border-slate-300">
-                        <td v-for="day in week" :key="day?.date_name" class="bg-gray-50 border border-slate-300">
+                    <tr v-for="week in calendar" class="bg-gray-50 border border-slate-300">
+                        <td v-for="day in week" :key="day?.date_name" 
+                        class="bg-gray-50 border border-slate-300">
                             <div v-if="day" class="date">
-                                {{ day.date_name }}
-                                <n-button @click=editSchedule(day)>Edit</n-button>
+                                <div :class="{ 'bg-pink-200': day.holiday, }">
+                                    <span class="font-black text-blue-900 italic "> {{ day.date_name }}</span>
+                                    <n-switch v-model:value="day.holiday" @update:value="updateDateHoliday(day)" />
+                                    <n-button type="warning" strong primary 
+                                    @click=editSchedule(day)>
+                                        Edit
+                                    </n-button>
+                                
+                                    <ul v-if="day">
+                                        <li v-for="item in day.items" :key="item.id">
+                                            {{ item.shift_name }}
+                                        </li>
+                                    </ul>
+                                </div>                           
                             </div>
-                            <ul v-if="day">
-                                <li v-for="item in day.items" :key="item.id">
-                                    {{ item.shift_name }}
-                                    <div>{{ item.holiday }}</div>
-                                </li>
-                            </ul>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            {{ result }}
         </n-tab-pane>
     </n-tabs>
     <n-drawer v-model:show="activeDrawerScheduleEdit" :width="502" :placement="placementDrawer">
         <n-drawer-content title="調整當日班種" closable>
-            <n-form>
-                <n-button type="error" block secondary strong @click=null>
+            <n-form inline>
+                <n-switch v-model:value="switchDateDelete" />
+                <n-button 
+                type="error" block secondary strong
+                :disabled="!switchDateDelete"
+                @click=deleteAllDateData(editScheduleItem)>
                 刪除 <span class="text-pink-600 font-semibold"> {{ editScheduleDate }} </span> 班表
-                </n-button>
+                </n-button>                
+            </n-form>
+            <n-form>
+
                 <table class="table-auto min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
@@ -321,7 +385,7 @@ onMounted(() => {
                                     <n-button 
                                     v-if="!res[col.key]  && col.title === 'Delete'"
                                     secondary strong type='error'
-                                    @click=null
+                                    @click=deleteData(res)
                                     :disabled="!editingItem[rowIndex]"
                                     >
                                         {{ col.key }}
