@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from datetime import datetime, timedelta
 
 # Create your views here.
 from django.http import HttpResponse
@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404, get_list_or_404
 
 from rest_framework import filters
 from rest_framework.views import APIView
@@ -110,6 +110,28 @@ class projectDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
 
+class projectShiftScheduleGenericView(generics.ListCreateAPIView):
+    queryset = Table_Shift_Schedule.objects.all()
+    serializer_class = Table_Shift_Schedule_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+    def get_queryset(self):
+        project_id = self.request.query_params.get('project_id', None)
+        queryset = Table_Shift_Schedule.objects.all()
+
+        if project_id is not None:
+            project_instance = get_object_or_404(Table_project, id=project_id)
+            queryset = queryset.filter(project=project_instance)
+
+        return queryset
+
+class projectShiftScheduleDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_Shift_Schedule.objects.all()
+    serializer_class = Table_Shift_Schedule_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
 class dateGenericView(generics.ListCreateAPIView):
     queryset = Table_date.objects.all()
     serializer_class = Table_date_Serializer
@@ -120,6 +142,35 @@ class dateGenericView(generics.ListCreateAPIView):
     filter_fields = ('date',)
     ordering_fields = ('date',)
     search_fields = ('date',)
+
+    def create(self, request, *args, **kwargs):
+        start_date_str = request.data.get('start_date')
+        end_date_str = request.data.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+        if start_date > end_date:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        date_list = []
+        current_date = start_date
+
+        while current_date <= end_date:
+            is_weekend = current_date.weekday() == 5 or current_date.weekday() == 6
+            date_exists = Table_date.objects.filter(date=current_date).exists()
+            
+            if not date_exists:
+                date_list.append(Table_date(date=current_date, holiday=is_weekend))
+
+            current_date += timedelta(days=1)
+
+        Table_date.objects.bulk_create(date_list)
+
+        return Response(status=status.HTTP_201_CREATED)
 
 class dateDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_date.objects.all()
@@ -277,6 +328,41 @@ class projectAttendDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
+def create_shift_schedules(request):
+    start_date_str = request.data.get('start_date')
+    end_date_str = request.data.get('end_date')
+    shift_ids = request.data.get('shift_ids')
+    project_id = request.data.get('project')
+
+    if not start_date_str or not end_date_str or not shift_ids:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+    end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+    dates = Table_date.objects.filter(date__range=(start_date, end_date))
+    shifts = get_list_or_404(Table_shift, id__in=shift_ids)
+    project = get_object_or_404(Table_project, id=project_id)
+
+    shift_schedules_to_create = []
+
+    for date in dates:
+        for shift in shifts:
+            # Check if the entry already exists
+            entry_exists = Table_Shift_Schedule.objects.filter(date=date, shift=shift, project=project).exists()
+
+            # If the entry does not exist, add it to the list of instances to be created
+            if not entry_exists:
+                shift_schedules_to_create.append(Table_Shift_Schedule(date=date, shift=shift, project=project))
+
+    # Bulk create the new instances
+    Table_Shift_Schedule.objects.bulk_create(shift_schedules_to_create)
+
+    return Response(status=status.HTTP_201_CREATED)
 
 
 

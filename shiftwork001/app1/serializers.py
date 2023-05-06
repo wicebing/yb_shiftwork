@@ -128,6 +128,12 @@ class Table_project_Serializer(serializers.ModelSerializer):
             raise serializers.ValidationError("專案名稱已存在")
         return value
 
+class Table_Shift_Schedule_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_Shift_Schedule
+        fields = '__all__'
+
+
 class Table_rule_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Table_rule

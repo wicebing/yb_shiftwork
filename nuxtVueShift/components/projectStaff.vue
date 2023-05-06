@@ -301,10 +301,10 @@ async function AddGroup() {
         } catch (error) {
             console.error('Error deleting data:', error);
         }        
-        getProject()
-        getGroup()
-        getUser()
     }
+    getProject()
+    getGroup()
+    getUser()
 }
 
 async function AddAttendRule(project_attend_row) {
@@ -330,6 +330,7 @@ async function AddAttendRule(project_attend_row) {
                 console.log("New staff added:", data.value)
                 getProjectAttendRule(project_attend_row)
                 getProject()
+                activeDrawerRuleEdit.value = false
             } else {
                 console.log('error',error)
                 console.log('errorName',error.value.data)
