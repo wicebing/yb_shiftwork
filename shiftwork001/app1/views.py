@@ -115,10 +115,11 @@ class projectShiftScheduleGenericView(generics.ListCreateAPIView):
     serializer_class = Table_Shift_Schedule_Serializer
     permission_classes = (permissions.IsAuthenticated, )
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    ordering_fields = ('date','shift')
 
     def get_queryset(self):
         project_id = self.request.query_params.get('project_id', None)
-        queryset = Table_Shift_Schedule.objects.all()
+        queryset = Table_Shift_Schedule.objects.all().order_by('date','shift' )
 
         if project_id is not None:
             project_instance = get_object_or_404(Table_project, id=project_id)

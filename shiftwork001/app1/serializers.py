@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db.models import F, ExpressionWrapper, IntegerField
@@ -129,9 +130,20 @@ class Table_project_Serializer(serializers.ModelSerializer):
         return value
 
 class Table_Shift_Schedule_Serializer(serializers.ModelSerializer):
+    shift_name = serializers.CharField(source='shift.name')
+    date_name = serializers.CharField(source='date.date')
+    holiday = serializers.BooleanField(source='date.holiday')
+    day_of_week = serializers.SerializerMethodField()
+
     class Meta:
         model = Table_Shift_Schedule
         fields = '__all__'
+        extra_fields = ['shift_name', 'date_name', 'day_of_week', 'holiday']
+
+    def get_day_of_week(self, obj):
+        date_obj = obj.date.date
+        return date_obj.strftime('%A')
+
 
 
 class Table_rule_Serializer(serializers.ModelSerializer):
