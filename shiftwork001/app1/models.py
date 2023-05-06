@@ -45,11 +45,22 @@ class Table_groups(models.Model):
         return str(self.id)+self.groupname.name+self.staff.name
 
 class Table_date(models.Model):
-    id = models.AutoField(primary_key=True,verbose_name='ID')
+    id = models.AutoField(primary_key=True, verbose_name='ID')
     date = models.DateField(verbose_name='日期')
+    holiday = models.BooleanField(verbose_name='假日', default=False)
+
     def __str__(self):
-        return str(self.id)+str(self.date)
-    
+        return str(self.id) + str(self.date)
+
+    def save(self, *args, **kwargs):
+        # Check if the object is new (id is None)
+        if self.id is None:
+            # Check if the date is a weekend (Saturday or Sunday)
+            if self.date.weekday() == 5 or self.date.weekday() == 6:
+                self.holiday = True
+
+        super().save(*args, **kwargs)
+
 class Table_shift(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='班別名稱')

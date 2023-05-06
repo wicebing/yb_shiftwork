@@ -29,6 +29,7 @@ from app1 import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/whoami/', views.get_current_user, name='get_current_user'),
+    path('api/createProjectSchedules/', views.create_shift_schedules, name='create_shift_schedules'),
     path('api/regist/', views.UserGenericView.as_view()),
     path('api/regist/<pk>/', views.UserDetailGenericView.as_view()),
     path('api/staff/', views.staffGenericView.as_view()),
@@ -49,8 +50,10 @@ urlpatterns = [
     path('api/rule/<pk>/', views.ruleDetailGenericView.as_view()),
     path('api/projectAttendRule/', views.projectAttendRuleGenericView.as_view()),
     path('api/projectAttendRule/<pk>/', views.projectAttendRuleDetailGenericView.as_view()),
+    path('api/schedule/', views.projectShiftScheduleGenericView.as_view()),
+    path('api/schedule/<pk>/', views.projectShiftScheduleDetailGenericView.as_view()),
 
-    
+
 
     path('docs/', include_docs_urls(title='My API title')),
     path('token/', views.MyObtainTokenPairView.as_view(), name='token_obtain_pair'),
