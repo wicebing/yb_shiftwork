@@ -28,16 +28,28 @@ const columns = ref([
 
 const options = ref([
     {
-      label: '白',
-      value: 'D'
+      label: '白-來診',
+      value: 'DF'
     },
     {
-      label: '小夜',
-      value: 'A'
+      label: '白-暫留',
+      value: 'DB'
     },
     {
-      label: '夜',
-      value: 'N'
+      label: '小夜-來診',
+      value: 'AF'
+    },
+    {
+      label: '小夜-暫留',
+      value: 'AB'
+    },
+    {
+      label: '夜-來診',
+      value: 'NF'
+    },
+    {
+      label: '夜-暫留',
+      value: 'NB'
     }
 ])
 

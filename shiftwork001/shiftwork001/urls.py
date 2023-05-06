@@ -52,6 +52,7 @@ urlpatterns = [
     path('api/projectAttendRule/<pk>/', views.projectAttendRuleDetailGenericView.as_view()),
     path('api/schedule/', views.projectShiftScheduleGenericView.as_view()),
     path('api/schedule/<pk>/', views.projectShiftScheduleDetailGenericView.as_view()),
+    path('api/scheduleStatistic/', views.projectShiftScheduleStatisticsView.as_view()),
 
 
 

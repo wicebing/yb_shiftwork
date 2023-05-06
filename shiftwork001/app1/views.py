@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.backends import ModelBackend
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import render, get_object_or_404, get_list_or_404
 
 from rest_framework import filters
@@ -109,7 +109,7 @@ class projectDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = Table_project_Serializer
     permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
-
+ 
 class projectShiftScheduleGenericView(generics.ListCreateAPIView):
     queryset = Table_Shift_Schedule.objects.all()
     serializer_class = Table_Shift_Schedule_Serializer
@@ -132,6 +132,48 @@ class projectShiftScheduleDetailGenericView(generics.RetrieveUpdateDestroyAPIVie
     serializer_class = Table_Shift_Schedule_Serializer
     permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class projectShiftScheduleStatisticsView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (JWTAuthentication, SessionAuthentication,)
+
+    def get(self, request):
+        project_id = request.query_params.get("project_id", None)
+        queryset = Table_Shift_Schedule.objects.all().order_by("date", "shift")
+
+        if project_id is not None:
+            project_instance = get_object_or_404(Table_project, id=project_id)
+            queryset = queryset.filter(project=project_instance)
+
+        # Calculate the statistics for character, holiday, and name
+        statistics = self.get_shift_schedule_statistics(queryset)
+
+        return Response(statistics)
+
+    def get_shift_schedule_statistics(self, queryset):
+        total_count = queryset.count()
+        # Get the value count for character
+        character_count = queryset.values("shift__charactor").annotate(count=Count("shift__charactor")).order_by("shift__charactor")
+
+        # Get the value count for holiday
+        holiday_count = queryset.values("date__holiday").annotate(count=Count("date__holiday")).order_by("date__holiday")
+
+        # Get the value count for name
+        name_count = queryset.values("shift__name").annotate(count=Count("shift__name")).order_by("shift__name")
+
+        intersection_counts = queryset.values("shift__charactor", "date__holiday",).annotate(count=Count("id")).order_by("shift__charactor", "date__holiday")
+
+        # Combine the counts into a single dictionary
+        statistics = {
+            "total_count": total_count,
+            "character_count": list(character_count),
+            "holiday_count": list(holiday_count),
+            "name_count": list(name_count),
+            "intersection_counts": list(intersection_counts)
+        }
+
+        return statistics
+
 
 class dateGenericView(generics.ListCreateAPIView):
     queryset = Table_date.objects.all()

@@ -50,6 +50,9 @@ onMounted(() => {
             <n-tab-pane name="projectShift" tab="填班(日期/班種)設定">
                 <projectDateShift :projectId="route.params.id" />
             </n-tab-pane>
+            <n-tab-pane name="projectWork" tab="總班數-分配">
+                <projectStatistics :projectId="route.params.id" />
+            </n-tab-pane>
         </n-tabs>
     </div>
   </div>

@@ -65,7 +65,7 @@ class Table_shift(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='班別名稱')
     time = models.CharField(max_length=100,verbose_name='班別時間')
-    charactor = models.CharField(max_length=1,verbose_name='白夜班')
+    charactor = models.CharField(max_length=5,verbose_name='白夜班')
     def __str__(self):
         return str(self.id)+self.name+self.time+self.charactor
 
