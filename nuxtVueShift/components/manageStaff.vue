@@ -24,13 +24,34 @@ const columns = ref([
     {
       title: 'Edit',
       key: 'Edit',
-      render: () => 'Edit'
+    },
+    {
+      title: '超排減班',
+      key: 'Ex/Rx',
     },
     {
       title: 'Delete',
       key: '刪',
-      render: () => 'Delete'
     }
+])
+
+const columnsExRx = ref([
+    {
+      title: 'id',
+      key: 'id'
+    },
+    {
+      title: 'description',
+      key: 'description'
+    },
+    {
+      title: 'credit',
+      key: 'credit'
+    },
+    {
+      title: 'Edit',
+      key: 'Edit',
+    },
 ])
 
 const columnsAUTH = ref([
@@ -66,6 +87,7 @@ const activeDrawerStaffEdit = ref(false)
 const placementDrawer = ref('right')
 const activeDrawerStaffAdd = ref(false)
 const activeDrawerAUTHEdit = ref(false)
+const activeDrawerExRxEdit = ref(false)
 
 const errors = ref([])
 const result = reactive ({})
@@ -74,7 +96,8 @@ const resultAUTH_nonStaff = reactive ({})
 const editing = reactive([])
 const editingAUTH = reactive([])
 const valueSelect= ref(null)
-
+const extra = reactive ({})
+const relax = reactive ({})
 
 const newStaff = reactive({
     NTUHid: "",
@@ -91,6 +114,14 @@ const originalStaff = reactive({
 });
 
 const editStaff = reactive({
+    id:"",
+    NTUHid: "",
+    name: "",
+    birthday: "",
+    AUTHid: null,
+})
+
+const editExtraRelax = reactive({
     id:"",
     NTUHid: "",
     name: "",
@@ -180,13 +211,6 @@ async function getAUTH () {
     console.log('resultAUTH_nonStaff',resultAUTH_nonStaff)
 }
 
-function computedDate(rowIndex, colKey) {
-  return computed({
-    get: () => new Date(result[rowIndex][colKey]).getTime(),
-    set: (newValue) => (result[rowIndex][colKey] = new Date(newValue)),
-  });
-}
-
 function convertDate(editStaff) {
     console.log('convertDate', editStaff.birthday)
   return computed({
@@ -201,6 +225,14 @@ async function editData(row) {
     Object.assign(originalStaff, row); // Store the original data before editing
     console.log("Row:", editStaff)
     activeDrawerStaffEdit.value = true
+}
+
+async function editExtraRelaxData(row) {
+    getExRx(row.NTUHid)
+    console.log("Row:", row)
+    Object.assign(editExtraRelax, row)
+    console.log("Row:", editStaff)
+    activeDrawerExRxEdit.value = true
 }
 
 async function editAUTHData(row) {
@@ -360,6 +392,110 @@ async function deleteAUTHData(row) {
     editingAUTH = reactive([])
 }
 
+
+
+async function getExtra (NTUH_id) {
+    console.log('getExtra')
+    for (const key in extra) {
+        delete extra[key];
+    }
+    try{
+        const { data, pending, refresh, error } = await useFetch(`/api/staffExtra/?staff_id=${NTUH_id}`, {
+            method: 'GET',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}` 
+            }
+        })
+
+        if (data.value) {
+            console.log('data project',data.value)
+            Object.assign(extra, data.value.results)
+            console.log('result project',extra)
+        } else {
+            console.log('error',error)
+        }
+    } catch (err) {
+        console.log('err',err)
+    }
+}
+
+async function getRelax (NTUH_id) {
+    console.log('getRelax')
+    for (const key in relax) {
+        delete relax[key];
+    }
+    try{
+        const { data, pending, refresh, error } = await useFetch(`/api/staffRelax/?staff_id=${NTUH_id}`, {
+            method: 'GET',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}` 
+            }
+        })
+
+        if (data.value) {
+            console.log('data project',data.value)
+            Object.assign(relax, data.value.results)
+            console.log('result project',relax)
+        } else {
+            console.log('error',error)
+        }
+    } catch (err) {
+        console.log('err',err)
+    }
+}
+
+async function updateExtraData(row) {
+    console.log("Updating staff data:", row);
+
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/staffExtra/${row.id}/`, {
+            method: 'PATCH',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: {'credit': row.credit,}
+        });
+
+        console.log("Updated successfully:", data.value);
+        // getExtra(row.NTUHid); // Refresh the staff list after the update is successful
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+    activeDrawerStaffEdit.value = false;
+}
+
+function getExRx(NTUHid) {
+    console.log('getExRx')
+    getExtra(NTUHid)
+    getRelax(NTUHid)
+}
+
+async function updateRelaxData(row) {
+    console.log("Updating staff data:", row);
+
+    try {
+        const { data, pending, refresh, error } = await useFetch(`/api/staffRelax/${row.id}/`, {
+            method: 'PATCH',
+            baseURL: 'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}`,
+                'Content-Type': 'application/json',
+            },
+            body: {'credit': row.credit,}
+        });
+
+        console.log("Updated successfully:", data.value);
+        // getRelax(row.NTUHid); // Refresh the staff list after the update is successful
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+    activeDrawerStaffEdit.value = false;
+}
+
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -448,6 +584,15 @@ onMounted(() => {
                                 </n-button>
 
                                 <n-button 
+                                v-if="!res[col.key] && col.key === 'Ex/Rx'"
+                                secondary
+                                type='warning'
+                                @click= editExtraRelaxData(res)
+                                >
+                                    {{ col.key }}
+                                </n-button>
+
+                                <n-button 
                                 v-if="!res[col.key]  && col.title === 'Delete'"
                                 secondary strong type='error'
                                 @click=deleteData(res)
@@ -527,6 +672,76 @@ onMounted(() => {
                 <n-button type="primary" block secondary strong @click="updateData(editStaff)">
                     更正
                 </n-button>       
+            </n-form>
+        </n-drawer-content>
+    </n-drawer>
+    <n-drawer v-model:show="activeDrawerExRxEdit" :width="502" :placement="placementDrawer">
+        <n-drawer-content title="超排減班編輯" closable>
+            <n-form >
+                <span class="text-pink-600 font-semibold text-lg">
+                    {{ editExtraRelax.name}} - {{ editExtraRelax.NTUHid }}   
+                </span>
+                <n-form-item-row label="超排設定">
+                    <table class="table-auto min-w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th v-for="col in columnsExRx" class="px-2 py-4 text-xs font-bold text-gray-500" scope="col">{{ col.title }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr v-for="(res, rowIndex) in extra">
+                                <td v-for="col in columnsExRx" class="px-2 py-2 text-sm font-medium text-gray-800 whitespace-nowrap">
+                                    <n-button 
+                                    v-if="!res[col.key] && col.title === 'Edit'"
+                                    secondary
+                                    type='info'
+                                    @click= updateExtraData(res)
+                                    >
+                                        {{ col.key }}
+                                    </n-button>
+
+                                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key!=='credit'">
+                                        {{ res[col.key] }}
+                                    </div>
+                                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key==='credit'">
+                                        <n-input placeholder="credit" v-model:value="res[col.key]" />
+                                    </div>                              
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </n-form-item-row>
+                <n-form-item-row label="減班設定">
+                    <table class="table-auto min-w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th v-for="col in columnsExRx" class="px-2 py-4 text-xs font-bold text-gray-500" scope="col">{{ col.title }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr v-for="(res, rowIndex) in relax">
+                                <td v-for="col in columnsExRx" class="px-2 py-2 text-sm font-medium text-gray-800 whitespace-nowrap">
+                                    <n-button 
+                                    v-if="!res[col.key] && col.title === 'Edit'"
+                                    secondary
+                                    type='info'
+                                    @click= updateRelaxData(res)
+                                    >
+                                        {{ col.key }}
+                                    </n-button>
+
+                                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key!=='credit'">
+                                        {{ res[col.key] }}
+                                    </div>
+                                    <div v-if="res[col.key] !== null && res[col.key] !== undefined && col.key==='credit'">
+                                        <n-input placeholder="credit" v-model:value="res[col.key]" />
+                                    </div>                          
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>                     
+                </n-form-item-row>
+  
             </n-form>
         </n-drawer-content>
     </n-drawer>

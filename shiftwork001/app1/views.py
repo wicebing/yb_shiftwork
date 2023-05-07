@@ -319,6 +319,16 @@ class staffExtraGenericView(generics.ListCreateAPIView):
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
     ordering_fields = ('id',)
 
+    def get_queryset(self):
+        staff_id = self.request.query_params.get('staff_id', None)
+        queryset = Table_staff_extra.objects.all().order_by('extra__id')
+
+        if staff_id is not None:
+            staff_instance = get_object_or_404(Table_staff, id=staff_id)
+            queryset = queryset.filter(staff=staff_instance)
+
+        return queryset
+
 class staffExtraDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_staff_extra.objects.all()
     serializer_class = Table_staff_extra_Serializer
@@ -333,6 +343,16 @@ class staffRelaxGenericView(generics.ListCreateAPIView):
     # pagination_class = MyPageNumberPagination
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
     ordering_fields = ('id',)
+
+    def get_queryset(self):
+        staff_id = self.request.query_params.get('staff_id', None)
+        queryset = Table_staff_relax.objects.all().order_by('relax__id')
+
+        if staff_id is not None:
+            staff_instance = get_object_or_404(Table_staff, id=staff_id)
+            queryset = queryset.filter(staff=staff_instance)
+
+        return queryset
 
 class staffRelaxDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_staff_relax.objects.all()

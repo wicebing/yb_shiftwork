@@ -46,6 +46,7 @@ class User_Serializer(serializers.ModelSerializer):
 class Table_groups_Serializer(serializers.ModelSerializer):
     # groupname = serializers.StringRelatedField()
     staff_name = serializers.StringRelatedField(source='staff.name', read_only=True)
+    staff_birthday = serializers.DateField(source='staff.birthday', read_only=True)
 
     def get_largest_turn_with_priority_1(self, groupname):
         largest_turn = Table_groups.objects.filter(groupname=groupname, priority=1).order_by('-turn').first()
@@ -54,7 +55,7 @@ class Table_groups_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Table_groups
         fields = '__all__'
-        extra_fields = ['staff_name',]
+        extra_fields = ['staff_name','staff_birthday']
 
     def create(self, validated_data):
         instance = super().create(validated_data)
@@ -154,12 +155,12 @@ class Table_relax_Serializer(serializers.ModelSerializer):
         return value
 
 class Table_staff_relax_Serializer(serializers.ModelSerializer):
-    relax_desscript = serializers.StringRelatedField(source='relax.description', read_only=True)
+    description = serializers.StringRelatedField(source='relax.description', read_only=True)
     
     class Meta:
         model = Table_staff_relax
         fields = '__all__'
-        extra_fields = ['relax_desscript', ]
+        extra_fields = ['description', ]
 
 class Table_extra_Serializer(serializers.ModelSerializer):
     class Meta:
@@ -171,12 +172,12 @@ class Table_extra_Serializer(serializers.ModelSerializer):
         return value
 
 class Table_staff_extra_Serializer(serializers.ModelSerializer):
-    extra_desscript = serializers.StringRelatedField(source='extra.description', read_only=True)
+    description = serializers.StringRelatedField(source='extra.description', read_only=True)
     
     class Meta:
         model = Table_staff_extra
         fields = '__all__'
-        extra_fields = ['extra_desscript', ]
+        extra_fields = ['description', ]
 
 class Table_rule_Serializer(serializers.ModelSerializer):
     class Meta:

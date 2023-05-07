@@ -168,8 +168,8 @@ class Table_extra(models.Model):
     
 class Table_staff_extra(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
-    staff = models.ForeignKey(Table_staff,on_delete=models.DO_NOTHING,verbose_name='人員')
-    extra = models.ForeignKey(Table_extra,on_delete=models.DO_NOTHING,verbose_name='超排')
+    staff = models.ForeignKey(Table_staff,on_delete=models.CASCADE,verbose_name='人員')
+    extra = models.ForeignKey(Table_extra,on_delete=models.CASCADE,verbose_name='超排')
     credit = models.IntegerField(verbose_name='超排分數',default=0)
 
     class Meta:
@@ -204,8 +204,8 @@ class Table_relax(models.Model):
 
 class Table_staff_relax(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
-    staff = models.ForeignKey(Table_staff,on_delete=models.DO_NOTHING,verbose_name='人員')
-    relax = models.ForeignKey(Table_relax,on_delete=models.DO_NOTHING,verbose_name='減班')
+    staff = models.ForeignKey(Table_staff,on_delete=models.CASCADE,verbose_name='人員')
+    relax = models.ForeignKey(Table_relax,on_delete=models.CASCADE,verbose_name='減班')
     credit = models.IntegerField(verbose_name='減班分數',default=0)
 
     class Meta:
