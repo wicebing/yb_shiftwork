@@ -281,7 +281,7 @@ class groupGenericView(generics.ListCreateAPIView):
         elif groupname_name is not None:
             groupname_instance = get_object_or_404(Table_groupname, name=groupname_name)
             queryset = queryset.filter(groupname=groupname_instance)
-            
+
         return queryset
 
 class groupDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
@@ -388,6 +388,18 @@ class ruleGenericView(generics.ListCreateAPIView):
     # pagination_class = MyPageNumberPagination
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
     ordering_fields = ('id',)
+
+    def get_queryset(self):
+        staffOnly = self.request.query_params.get('staffOnly', None)
+        queryset = Table_rule.objects.all()
+
+        if staffOnly is not None:
+            if staffOnly.lower() == 'true':
+                queryset = queryset.filter(staffOnly=True)
+            elif staffOnly.lower() == 'false':
+                queryset = queryset.filter(staffOnly=False)
+        return queryset
+    
 
 class ruleDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_rule.objects.all()

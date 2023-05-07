@@ -209,7 +209,8 @@ class Table_project_attend_Serializer(serializers.ModelSerializer):
     def get_related_rules(self, obj):
         related_rules = Table_project_attend_rule.objects.filter(project_attend=obj).order_by('rule_id')
         rules = [
-            {
+            {   
+                'id': rule_obj.rule.id,
                 'name': rule_obj.rule.name,
                 'description': rule_obj.rule.description
             }

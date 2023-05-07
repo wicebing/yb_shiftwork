@@ -218,6 +218,9 @@ class Table_rule(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='規則名稱')
     description = models.CharField(max_length=1000,verbose_name='規則描述')
+    valueOfRule = models.CharField(max_length=100,verbose_name='規則值',null=True)
+    staffOnly = models.BooleanField(verbose_name='因人而異規則',default=False)
+    specialGroup = models.BooleanField(verbose_name='特殊編組規則',default=False)
     def __str__(self):
         return str(self.id)+self.name+self.description
     

@@ -13,6 +13,18 @@ const columns = ref([
       key: 'description'
     },
     {
+      title: 'valueOfRule',
+      key: 'valueOfRule',
+    },
+    {
+      title: 'staffOnly',
+      key: 'staffOnly',
+    },
+    {
+      title: 'specialGroup',
+      key: 'specialGroup',
+    },
+    {
       title: 'Edit',
       key: 'Edit',
     },
@@ -33,16 +45,25 @@ const errors = ref([])
 const newProject = reactive({
     name: "",
     description: "",
+    valueOfRule: null,
+    staffOnly: null,
+    specialGroup: null,
 })
 
 const originalProject = reactive({
     name: "",
     description: "",
+    valueOfRule: null,
+    staffOnly: null,
+    specialGroup: null,
 });
 
 const editProject = reactive({
     name: "",
     description: "",
+    valueOfRule: null,
+    staffOnly: null,
+    specialGroup: null,
 })
 
 async function getProject () {
@@ -111,6 +132,9 @@ async function addData() {
             body: {
                 name: newProject.name,
                 description: newProject.description,
+                valueOfRule: newProject.valueOfRule,
+                staffOnly: newProject.staffOnly,
+                specialGroup: newProject.specialGroup,
             }
         })
 
@@ -219,6 +243,17 @@ onMounted(() => {
                 <n-form-item-row label="描述">
                     <n-input placeholder="詳細規則描述" v-model:value="editProject.description" />
                 </n-form-item-row>
+                <n-form-item-row label="值">
+                    <n-input placeholder="詳細規則值" v-model:value="editProject.valueOfRule" />
+                </n-form-item-row>
+                <n-form-item-row label="僅限人員">
+                    {{ editProject.staffOnly }}
+                    <n-switch v-model:value="editProject.staffOnly" />
+                </n-form-item-row>
+                <n-form-item-row label="特殊群組">
+                    {{ editProject.specialGroup }}
+                    <n-switch v-model:value="editProject.specialGroup" />
+                </n-form-item-row>
                 <n-button type="primary" block secondary strong @click="updateData(editProject)">
                     更正
                 </n-button>       
@@ -233,6 +268,17 @@ onMounted(() => {
                 </n-form-item-row>
                 <n-form-item-row label="描述">
                     <n-input placeholder="詳細規則描述" v-model:value="newProject.description" />
+                </n-form-item-row>
+                <n-form-item-row label="值">
+                    <n-input placeholder="詳細規則值" v-model:value="newProject.valueOfRule" />
+                </n-form-item-row>
+                <n-form-item-row label="僅限人員">
+                    {{ newProject.staffOnly }}
+                    <n-switch v-model:value="newProject.staffOnly" />
+                </n-form-item-row>
+                <n-form-item-row label="特殊群組">
+                    {{ newProject.specialGroup }}
+                    <n-switch v-model:value="newProject.specialGroup" />
                 </n-form-item-row>
                 <div v-if="errors.length" class="mb-6 py-4 px-6 bg-rose-400 rounded-xl">
                     <p v-for="error in errors" :key="error">

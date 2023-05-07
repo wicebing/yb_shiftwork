@@ -186,7 +186,7 @@ async function getRules () {
         delete resultGroups[key];
     }
     try {
-        const { data, pending, refresh, error } = await useFetch('/api/rule/', {
+        const { data, pending, refresh, error } = await useFetch('/api/rule/?staffOnly=false', {
             method: 'GET',
             baseURL:'http://localhost:8000',
             headers: {
