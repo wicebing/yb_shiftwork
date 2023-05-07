@@ -50,11 +50,11 @@ class Table_groups_Serializer(serializers.ModelSerializer):
     def get_largest_turn_with_priority_1(self, groupname):
         largest_turn = Table_groups.objects.filter(groupname=groupname, priority=1).order_by('-turn').first()
         return 1+largest_turn.turn if largest_turn else 0
-
+    
     class Meta:
         model = Table_groups
         fields = '__all__'
-        extra_fields = ['staff_name']
+        extra_fields = ['staff_name',]
 
     def create(self, validated_data):
         instance = super().create(validated_data)
@@ -144,7 +144,39 @@ class Table_Shift_Schedule_Serializer(serializers.ModelSerializer):
         date_obj = obj.date.date
         return date_obj.strftime('%A')
 
+class Table_relax_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_relax
+        fields = '__all__'
+    def validate_name(self, value):
+        if Table_relax.objects.filter(name=value).exists():
+            raise serializers.ValidationError("休假名稱已存在")
+        return value
 
+class Table_staff_relax_Serializer(serializers.ModelSerializer):
+    relax_desscript = serializers.StringRelatedField(source='relax.description', read_only=True)
+    
+    class Meta:
+        model = Table_staff_relax
+        fields = '__all__'
+        extra_fields = ['relax_desscript', ]
+
+class Table_extra_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_extra
+        fields = '__all__'
+    def validate_name(self, value):
+        if Table_extra.objects.filter(name=value).exists():
+            raise serializers.ValidationError("超排名稱已存在")
+        return value
+
+class Table_staff_extra_Serializer(serializers.ModelSerializer):
+    extra_desscript = serializers.StringRelatedField(source='extra.description', read_only=True)
+    
+    class Meta:
+        model = Table_staff_extra
+        fields = '__all__'
+        extra_fields = ['extra_desscript', ]
 
 class Table_rule_Serializer(serializers.ModelSerializer):
     class Meta:

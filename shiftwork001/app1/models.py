@@ -1,5 +1,6 @@
 from django.db import models, transaction
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 # class UserBaseInfo(models.Model):
@@ -25,6 +26,26 @@ class Table_staff(models.Model):
 
     def __str__(self):
         return str(self.NTUHid)+self.name
+    
+    def save(self, *args, **kwargs):
+        # Check if this is a new instance by checking if the id is None
+        is_new_instance = self.id is None
+
+        # Call the original save method
+        super().save(*args, **kwargs)
+
+        if is_new_instance:
+            # If this is a new instance, create a Table_staff_extra instance for every Table_staff
+            for extra in Table_extra.objects.all():
+                staff_extra, created = Table_staff_extra.objects.get_or_create(staff=self, extra=extra)
+                if not created:
+                    # If the entry already exists, raise a ValidationError
+                    raise ValidationError(f"Staff {self.id} and extra {extra.id} are already associated.")
+            for relax in Table_relax.objects.all():
+                staff_relax, created = Table_staff_relax.objects.get_or_create(staff=self, relax=relax)
+                if not created:
+                    # If the entry already exists, raise a ValidationError
+                    raise ValidationError(f"Staff {self.id} and relax {relax.id} are already associated.")
     
 class Table_groupname(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
@@ -121,6 +142,77 @@ class Table_project_attend(models.Model):
         else:
             sequence = priority * 100 + ((groupname_turn - project_turn) % (project_mod))
         return sequence
+
+class Table_extra(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    name = models.CharField(max_length=100,verbose_name='超排名稱')
+    description = models.CharField(max_length=1000,verbose_name='超排描述')
+    staff_extra = models.ManyToManyField('Table_staff',through='Table_staff_extra',through_fields=('extra','staff'))
+    def __str__(self):
+        return str(self.id)+self.name+self.description
+    
+    def save(self, *args, **kwargs):
+        # Check if this is a new instance by checking if the id is None
+        is_new_instance = self.id is None
+
+        # Call the original save method
+        super().save(*args, **kwargs)
+
+        if is_new_instance:
+            # If this is a new instance, create a Table_staff_extra instance for every Table_staff
+            for staff in Table_staff.objects.all():
+                staff_extra, created = Table_staff_extra.objects.get_or_create(staff=staff, extra=self)
+                if not created:
+                    # If the entry already exists, raise a ValidationError
+                    raise ValidationError(f"Staff {staff.id} and extra {self.id} are already associated.")
+    
+class Table_staff_extra(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    staff = models.ForeignKey(Table_staff,on_delete=models.DO_NOTHING,verbose_name='人員')
+    extra = models.ForeignKey(Table_extra,on_delete=models.DO_NOTHING,verbose_name='超排')
+    credit = models.IntegerField(verbose_name='超排分數',default=0)
+
+    class Meta:
+        unique_together = ('staff', 'extra')
+
+    def __str__(self):
+        return str(self.id)
+    
+class Table_relax(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    name = models.CharField(max_length=100,verbose_name='減班名稱')
+    description = models.CharField(max_length=1000,verbose_name='減班描述')
+    staff_relax = models.ManyToManyField('Table_staff',through='Table_staff_relax',through_fields=('relax','staff'))
+
+    def __str__(self):
+        return str(self.id)+self.name+self.description
+    
+    def save(self, *args, **kwargs):
+        # Check if this is a new instance by checking if the id is None
+        is_new_instance = self.id is None
+
+        # Call the original save method
+        super().save(*args, **kwargs)
+
+        if is_new_instance:
+            # If this is a new instance, create a Table_staff_relax instance for every Table_staff
+            for staff in Table_staff.objects.all():
+                staff_relax, created = Table_staff_relax.objects.get_or_create(staff=staff, relax=self)
+                if not created:
+                    # If the entry already exists, raise a ValidationError
+                    raise ValidationError(f"Staff {staff.id} and relax {self.id} are already associated.")
+
+class Table_staff_relax(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    staff = models.ForeignKey(Table_staff,on_delete=models.DO_NOTHING,verbose_name='人員')
+    relax = models.ForeignKey(Table_relax,on_delete=models.DO_NOTHING,verbose_name='減班')
+    credit = models.IntegerField(verbose_name='減班分數',default=0)
+
+    class Meta:
+        unique_together = ('staff', 'relax')
+
+    def __str__(self):
+        return str(self.id)
 
 class Table_rule(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')

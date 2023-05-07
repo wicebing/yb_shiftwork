@@ -22,6 +22,7 @@ const optionsSelectShift = ref([]);
 const result = reactive ({})
 const errors = ref([])
 const daysOfWeek = ref(['日', '一', '二', '三', '四', '五', '六'])
+const daysOfWeek_0 = ref(['日', '一', '二', '三', '四', '五', '六'])
 const daysOfWeek_1 = ref(['一', '二', '三', '四', '五', '六','日'])
 const dayOfWeekStart = ref(false)
 
@@ -56,7 +57,7 @@ const optionsShift = computed(() => {
 
 function changeWeekStartsOn() {
     weekStartsOn.value = dayOfWeekStart.value ? 1 : 0;
-    daysOfWeek.value = dayOfWeekStart.value ? daysOfWeek_1.value : daysOfWeek.value;
+    daysOfWeek.value = dayOfWeekStart.value ? daysOfWeek_1.value : daysOfWeek_0.value;
     transformedResult()
 }
 

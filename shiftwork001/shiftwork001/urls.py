@@ -53,6 +53,15 @@ urlpatterns = [
     path('api/schedule/', views.projectShiftScheduleGenericView.as_view()),
     path('api/schedule/<pk>/', views.projectShiftScheduleDetailGenericView.as_view()),
     path('api/scheduleStatistic/', views.projectShiftScheduleStatisticsView.as_view()),
+    path('api/extra/', views.extraGenericView.as_view()),
+    path('api/extra/<pk>/', views.extraDetailGenericView.as_view()),
+    path('api/relax/', views.relaxGenericView.as_view()),
+    path('api/relax/<pk>/', views.relaxDetailGenericView.as_view()),
+    path('api/staffExtra/', views.staffExtraGenericView.as_view()),
+    path('api/staffExtra/<pk>/', views.staffExtraDetailGenericView.as_view()),
+    path('api/staffRelax/', views.staffRelaxGenericView.as_view()),
+    path('api/staffRelax/<pk>/', views.staffRelaxDetailGenericView.as_view()),
+    
 
 
 

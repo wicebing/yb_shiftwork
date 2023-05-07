@@ -23,6 +23,12 @@ onMounted(() => {
             <n-tab-pane name="allRules" tab="填班規則">
                 <rules />
             </n-tab-pane>
+            <n-tab-pane name="allExtra" tab="超排控制項目">
+                <extra />
+            </n-tab-pane>
+            <n-tab-pane name="allRelax" tab="減班控制項目">
+                <relax />
+            </n-tab-pane>
         </n-tabs>
     </div>
   </div>

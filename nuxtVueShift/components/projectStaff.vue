@@ -39,14 +39,14 @@ const editProject = reactive({
 })
 
 const columns = ref([
-    {
-      title: 'id',
-      key: 'id'
-    },
-    {
-      title: 'project',
-      key: 'project'
-    },
+    // {
+    //   title: 'id',
+    //   key: 'id'
+    // },
+    // {
+    //   title: 'project',
+    //   key: 'project'
+    // },
     {
       title: '組名',
       key: 'groupname_name'
@@ -59,10 +59,10 @@ const columns = ref([
       title: '填班規則',
       key: 'related_rules'
     },
-    {
-      title: 'sequence',
-      key: 'sequence'
-    },
+    // {
+    //   title: 'sequence',
+    //   key: 'sequence'
+    // },
     {
       title: 'Edit',
       key: 'Edit',

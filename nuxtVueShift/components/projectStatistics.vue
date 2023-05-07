@@ -12,6 +12,7 @@ const props = defineProps({
 })
 
 const result = reactive ({})
+const resultStaff = reactive ({})
 
 async function getProject () {
     console.log('getProject')
@@ -39,61 +40,111 @@ async function getProject () {
     }
 }
 
+async function getProjectAttend () {
+    console.log('getProjectAttend')
+    for (const key in resultStaff) {
+        delete resultStaff[key];
+    }
+    try{
+        const { data, pending, refresh, error } = await useFetch(`/api/projectAttend/?project_id=${props.projectId}&ordering=sequence`, {
+            method: 'GET',
+            baseURL:'http://localhost:8000',
+            headers: {
+                Authorization: `JWT ${useStore.token}` 
+            }
+        })
+
+        if (data.value) {
+            console.log('data getProjectAttend',data.value)
+            Object.assign(resultStaff, data.value.results)
+        } else {
+            console.log('error',error)
+        }
+    } catch (err) {
+        console.log('err',err)
+    }
+}
+
 onMounted(() => {
     getProject()
+    getProjectAttend()
 })
 
 </script>
 
 <template>
-  <n-grid>
-    <n-grid-item span="24">
-      <n-card>
-        <template #header>
-          <span>總班數： {{ result.total_count }}</span>
-        </template>
-      </n-card>
-    </n-grid-item>
-    <n-grid-item span="6">
-      <n-card>
-        <template #header>
-          <span>Character count</span>
-        </template>
-        <div v-for="item in result.character_count" :key="item.shift__charactor">
-          {{ item.shift__charactor }}: {{ item.count }}
-        </div>
-      </n-card>
-    </n-grid-item>
-    <n-grid-item span="6">
-      <n-card>
-        <template #header>
-          <span>Holiday count</span>
-        </template>
-        <div v-for="item in result.holiday_count" :key="item.date__holiday">
-          {{ item.date__holiday ? "假日" : "平日" }}: {{ item.count }}
-        </div>
-      </n-card>
-    </n-grid-item>
-    <n-grid-item span="6">
-      <n-card>
-        <template #header>
-          <span>Name count</span>
-        </template>
-        <div v-for="item in result.name_count" :key="item.shift__name">
-          {{ item.shift__name }}: {{ item.count }}
-        </div>
-      </n-card>
-    </n-grid-item>
-    <n-grid-item span="6">
-      <n-card>
-        <template #header>
-          <span>Intersection counts</span>
-        </template>
-        <div v-for="item in result.intersection_counts" :key="item.shift__charactor + '_' + item.date__holiday">
-          {{ item.shift__charactor }} - {{ item.date__holiday ?  "假日" : "平日" }} : {{ item.count }}
-        </div>
-      </n-card>
-    </n-grid-item>
-  </n-grid>
+    <n-tabs default-value="shiftCount">
+        <n-tab-pane name="shiftCount" tab="應填班數">
+            <n-grid>
+                <n-grid-item span="24">
+                <n-card>
+                    <template #header>
+                    <span>總班數： {{ result.total_count }}</span>
+                    </template>
+                </n-card>
+                </n-grid-item>
+                <n-grid-item span="6">
+                <n-card>
+                    <template #header>
+                    <span>Character count</span>
+                    </template>
+                    <div v-for="item in result.character_count" :key="item.shift__charactor">
+                    {{ item.shift__charactor }}: {{ item.count }}
+                    </div>
+                </n-card>
+                </n-grid-item>
+                <n-grid-item span="6">
+                <n-card>
+                    <template #header>
+                    <span>Holiday count</span>
+                    </template>
+                    <div v-for="item in result.holiday_count" :key="item.date__holiday">
+                    {{ item.date__holiday ? "假日" : "平日" }}: {{ item.count }}
+                    </div>
+                </n-card>
+                </n-grid-item>
+                <n-grid-item span="6">
+                <n-card>
+                    <template #header>
+                    <span>Name count</span>
+                    </template>
+                    <div v-for="item in result.name_count" :key="item.shift__name">
+                    {{ item.shift__name }}: {{ item.count }}
+                    </div>
+                </n-card>
+                </n-grid-item>
+                <n-grid-item span="6">
+                <n-card>
+                    <template #header>
+                    <span>Intersection counts</span>
+                    </template>
+                    <div v-for="item in result.intersection_counts" :key="item.shift__charactor + '_' + item.date__holiday">
+                    {{ item.shift__charactor }} - {{ item.date__holiday ?  "假日" : "平日" }} : {{ item.count }}
+                    </div>
+                </n-card>
+                </n-grid-item>
+            </n-grid>               
+        </n-tab-pane>
+        <n-tab-pane name="shiftShare" tab="分配班數">
+            <table class="table-auto min-w-full">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-2">班別</th>
+                        <th class="px-4 py-2">應填班數</th>
+                        <th class="px-4 py-2">實填班數</th>
+                        <th class="px-4 py-2">班數差異</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(res, rowIndex) in resultStaff">
+                        <tr v-for="(resmb, rowIndex) in res.group_members">
+                            {{res.groupname_name}} - {{ resmb.staff_name }} - {{ resmb.staff }} - {{ res.related_rules }}
+                        </tr>
+                    </tr>
+                </tbody>
+            </table>
+        </n-tab-pane> 
+    </n-tabs>
+  
 </template>
 

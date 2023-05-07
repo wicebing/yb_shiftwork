@@ -69,7 +69,7 @@ class UserDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
 
 class staffGenericView(generics.ListCreateAPIView):
-    queryset = Table_staff.objects.all()
+    queryset = Table_staff.objects.all().order_by('NTUHid')
     serializer_class = Table_staff_Serializer
     permission_classes = (permissions.IsAuthenticated, )
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
@@ -229,7 +229,7 @@ class shiftGenericView(generics.ListCreateAPIView):
     # pagination_class = MyPageNumberPagination
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
     filter_fields = ('charactor','name',)
-    ordering_fields = ('name','charactor','time')
+    ordering_fields = ('id','name','charactor','time')
     search_fields = ('name','charactor','time',)
 
 class shiftDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
@@ -295,6 +295,66 @@ class groupDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
         groupname.mod = self.get_largest_turn_with_priority_1(groupname)
         groupname.save()
 
+class extraGenericView(generics.ListCreateAPIView):
+    queryset = Table_extra.objects.all()
+    serializer_class = Table_extra_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    ordering_fields = ('id',)
+
+class extraDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_extra.objects.all()
+    serializer_class = Table_extra_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class staffExtraGenericView(generics.ListCreateAPIView):
+    queryset = Table_staff_extra.objects.all()
+    serializer_class = Table_staff_extra_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    ordering_fields = ('id',)
+
+class staffExtraDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_staff_extra.objects.all()
+    serializer_class = Table_staff_extra_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class staffRelaxGenericView(generics.ListCreateAPIView):
+    queryset = Table_staff_relax.objects.all()
+    serializer_class = Table_staff_relax_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    ordering_fields = ('id',)
+
+class staffRelaxDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_staff_relax.objects.all()
+    serializer_class = Table_staff_relax_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
+class relaxGenericView(generics.ListCreateAPIView):
+    queryset = Table_relax.objects.all()
+    serializer_class = Table_relax_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    # pagination_class = MyPageNumberPagination
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    ordering_fields = ('id',)
+
+class relaxDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_relax.objects.all()
+    serializer_class = Table_relax_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+
 class ruleGenericView(generics.ListCreateAPIView):
     queryset = Table_rule.objects.all()
     serializer_class = Table_rule_Serializer
@@ -317,6 +377,7 @@ class projectAttendRuleGenericView(generics.ListCreateAPIView):
     authentication_classes = (JWTAuthentication,SessionAuthentication,)
     # pagination_class = MyPageNumberPagination
     filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    ordering_fields = ('id',)
 
     def get_queryset(self):
         project_attend_id = self.request.query_params.get('project_attend', None)
@@ -344,6 +405,9 @@ class projectAttendGenericView(generics.ListCreateAPIView):
     filter_fields = ('project',)
     ordering_fields = ('sequence',)
     search_fields = ('project',)
+
+    filter_backends = (DjangoFilterBackend,filters.OrderingFilter,filters.SearchFilter)
+    ordering_fields = ('id',)
 
     def get_queryset(self):
         project_id = self.request.query_params.get('project_id', None)
