@@ -59,10 +59,10 @@ const columns = ref([
       title: '填班規則',
       key: 'related_rules'
     },
-    // {
-    //   title: 'sequence',
-    //   key: 'sequence'
-    // },
+    {
+      title: 'sequence',
+      key: 'sequence'
+    },
     {
       title: 'Edit',
       key: 'Edit',

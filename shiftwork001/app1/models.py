@@ -223,8 +223,8 @@ class Table_rule(models.Model):
     
 class Table_project_attend_rule(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
-    project_attend = models.ForeignKey(Table_project_attend,on_delete=models.DO_NOTHING,verbose_name='專案群組')
-    rule = models.ForeignKey(Table_rule,on_delete=models.DO_NOTHING,verbose_name='規則')
+    project_attend = models.ForeignKey(Table_project_attend,on_delete=models.CASCADE,verbose_name='專案群組')
+    rule = models.ForeignKey(Table_rule,on_delete=models.CASCADE,verbose_name='規則')
     def __str__(self):
         return str(self.id)
 

@@ -47,6 +47,9 @@ onMounted(() => {
             <n-tab-pane name="projectStaff" tab="填班人員設定">
                 <ProjectStaff :projectId="route.params.id" />
             </n-tab-pane>
+            <n-tab-pane name="projectStaffSetting" tab="人員特殊設定">
+                <ProjectStaffSetting :projectId="route.params.id" />
+            </n-tab-pane>
             <n-tab-pane name="projectShift" tab="填班(日期/班種)設定">
                 <projectDateShift :projectId="route.params.id" />
             </n-tab-pane>

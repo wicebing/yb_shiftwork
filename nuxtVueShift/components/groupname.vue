@@ -313,6 +313,7 @@ async function addData() {
             },
             body: {
                 name: newProject.name,
+                priority: newProject.priority,
                 turn: newProject.turn,
             }
         })
