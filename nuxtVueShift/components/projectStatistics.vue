@@ -160,8 +160,8 @@ onMounted(() => {
                     <template #header>
                     <span>Character count</span>
                     </template>
-                    <div v-for="item in result.character_count" :key="item.shift__charactor">
-                    {{ item.shift__charactor }}: {{ item.count }}
+                    <div v-for="item in result.character_count" :key="item.shift__charactor__name">
+                    {{ item.shift__charactor__name }}: {{ item.count }}
                     </div>
                 </n-card>
                 </n-grid-item>
@@ -190,8 +190,8 @@ onMounted(() => {
                     <template #header>
                     <span>Intersection counts</span>
                     </template>
-                    <div v-for="item in result.intersection_counts" :key="item.shift__charactor + '_' + item.date__holiday">
-                    {{ item.shift__charactor }} - {{ item.date__holiday ?  "假日" : "平日" }} : {{ item.count }}
+                    <div v-for="item in result.intersection_counts" :key="item.shift__charactor__name + '_' + item.date__holiday">
+                    {{ item.shift__charactor__name }} - {{ item.date__holiday ?  "假日" : "平日" }} : {{ item.count }}
                     </div>
                 </n-card>
                 </n-grid-item>

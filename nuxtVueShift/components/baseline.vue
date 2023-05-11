@@ -2,19 +2,15 @@
 import {NButton, NDrawer, NDrawerContent, NForm, NFormItemRow, NInput, NSwitch, NSelect, NTag } from 'naive-ui'
 
 const useStore = useUserStore()
-const options = ref()
+
 const columns = ref([
     {
-      title: '班種名稱',
+      title: '超排項目',
       key: 'name'
     },
     {
-      title: '時間',
-      key: 'time'
-    },
-    {
-      title: '屬性',
-      key: 'charactor_name'
+      title: '描述',
+      key: 'description'
     },
     {
       title: 'Edit',
@@ -26,43 +22,8 @@ const columns = ref([
     }
 ])
 
-// const options = ref([
-//     {
-//       label: '白-來診',
-//       value: 'DF'
-//     },
-//     {
-//       label: '白-暫留',
-//       value: 'DB'
-//     },
-//     {
-//       label: '白-重症',
-//       value: 'DC'
-//     },
-//     {
-//       label: '小夜-來診',
-//       value: 'AF'
-//     },
-//     {
-//       label: '小夜-暫留',
-//       value: 'AB'
-//     },
-//     {
-//       label: '夜-來診',
-//       value: 'NF'
-//     },
-//     {
-//       label: '夜-暫留',
-//       value: 'NB'
-//     },
-//     {
-//       label: '夜-重症',
-//       value: 'NC'
-//     },
-// ])
 
 const result = reactive ({})
-const resultCharactor = reactive ({})
 const activeDrawerProjectEdit = ref(false)
 const activeDrawerProjectAdd = ref(false)
 const placementDrawer = ref('right')
@@ -71,82 +32,18 @@ const errors = ref([])
 
 const newProject = reactive({
     name: "",
-    time: "",
-    charactor: "",
+    description: "",
 })
 
 const originalProject = reactive({
     name: "",
-    time: "",
-    charactor: "",
+    description: "",
 });
 
 const editProject = reactive({
     name: "",
-    time: "",
-    charactor: "",
+    description: "",
 })
-
-function convertOptions (results) {
-    const options = results.map((item) => {
-      let label = '';
-      switch(item.charactor_time) {
-        case 'D':
-          label += '白';
-          break;
-        case 'A':
-          label += '小夜';
-          break;
-        case 'N':
-          label += '夜';
-          break;
-      }
-      label += '-';
-      switch(item.charactor_position) {
-        case 'F':
-          label += '來診';
-          break;
-        case 'B':
-          label += '暫留';
-          break;
-        case 'C':
-          label += '重症';
-          break;
-      }
-      return {
-        label: label,
-        value: item.id,
-      };
-    });
-    console.log('options',options)
-    return options
-}
-
-async function getCharactor () {
-    console.log('getCharactor')
-    for (const key in resultCharactor) {
-        delete resultCharactor[key];
-    }
-    try{
-        const { data, pending, refresh, error } = await useFetch('/api/shiftCharactor/', {
-            method: 'GET',
-            baseURL:'http://localhost:8000',
-            headers: {
-                Authorization: `JWT ${useStore.token}` 
-            }
-        })
-        if (data.value) {
-            console.log('dataCharactor',data.value)
-            Object.assign(resultCharactor, data.value.results)
-            options.value = convertOptions (data.value.results)
-            console.log('resultoptions',options)
-        } else {
-            console.log('error',error)
-        }
-    } catch (err) {
-        console.log('err',err)
-    }
-}
 
 async function getProject () {
     console.log('getProject')
@@ -154,7 +51,7 @@ async function getProject () {
         delete result[key];
     }
     try{
-        const { data, pending, refresh, error } = await useFetch('/api/shift/', {
+        const { data, pending, refresh, error } = await useFetch('/api/relax/', {
             method: 'GET',
             baseURL:'http://localhost:8000',
             headers: {
@@ -182,7 +79,7 @@ async function editData(row) {
 async function deleteData(row) {
     try {
         console.log('deleteData', row)
-        const { data, pending, refresh, error } = await useFetch(`/api/shift/${row.id}`, {
+        const { data, pending, refresh, error } = await useFetch(`/api/relax/${row.id}`, {
         method: 'DELETE',
         baseURL: 'http://localhost:8000',
         headers: {
@@ -205,7 +102,7 @@ async function addData() {
     try {
         console.log('addData')
         console.log('NEWdate',newProject)
-        const { data, pending, refresh, error } = await useFetch('/api/shift/', {
+        const { data, pending, refresh, error } = await useFetch('/api/relax/', {
             method: 'POST',
             baseURL:'http://localhost:8000',
             headers: {
@@ -213,8 +110,7 @@ async function addData() {
             },
             body: {
                 name: newProject.name,
-                time: newProject.time,
-                charactor: newProject.charactor,
+                description: newProject.description,
             }
         })
 
@@ -247,7 +143,7 @@ async function updateData() {
     }
 
     try {
-        const { data, pending, refresh, error } = await useFetch(`/api/shift/${editProject.id}/`, {
+        const { data, pending, refresh, error } = await useFetch(`/api/relax/${editProject.id}/`, {
             method: 'PATCH',
             baseURL: 'http://localhost:8000',
             headers: {
@@ -268,7 +164,6 @@ async function updateData() {
 
 onMounted(() => {
     getProject()
-    getCharactor()
 })
 
 </script>
@@ -277,7 +172,7 @@ onMounted(() => {
     <n-button dashed type="warning" strong
     @click=switchactiveDrawerProjectAdd
     >
-        新增班種
+        新增減班項目
     </n-button>
     <table class="table-auto min-w-full">
         <thead class="bg-gray-50">
@@ -316,19 +211,13 @@ onMounted(() => {
         </tbody>
     </table>
     <n-drawer v-model:show="activeDrawerProjectEdit" :width="502" :placement="placementDrawer">
-        <n-drawer-content title="專案名稱" closable>
+        <n-drawer-content title="減班項目名稱" closable>
             <n-form>
-                <n-form-item-row label="班種名稱">
-                    <n-input placeholder="診別-白" v-model:value="editProject.name" />
+                <n-form-item-row label="減班項目代碼">
+                    <n-input placeholder="..." v-model:value="editProject.name" />
                 </n-form-item-row>
-                <n-form-item-row label="時間">
-                    <n-input placeholder="起-終(ex:08-20/14-20/20-08)" v-model:value="editProject.time" />
-                </n-form-item-row>
-                <n-form-item-row label="屬性">
-                    <n-tag type="warning" >
-                    {{ editProject.charactor }}
-                    </n-tag>
-                    <n-select v-model:value="editProject.charactor" :options="options" />
+                <n-form-item-row label="描述">
+                    <n-input placeholder="詳細減班項目描述" v-model:value="editProject.description" />
                 </n-form-item-row>
                 <n-button type="primary" block secondary strong @click="updateData(editProject)">
                     更正
@@ -337,19 +226,13 @@ onMounted(() => {
         </n-drawer-content>
     </n-drawer>
     <n-drawer v-model:show="activeDrawerProjectAdd" :width="502" :placement="placementDrawer">
-        <n-drawer-content title="新增班種" closable>
+        <n-drawer-content title="新增減班項目" closable>
             <n-form>
-                <n-form-item-row label="班種名稱">
-                    <n-input placeholder="診別-白" v-model:value="newProject.name" />
+                <n-form-item-row label="減班項目代碼">
+                    <n-input placeholder="..." v-model:value="newProject.name" />
                 </n-form-item-row>
-                <n-form-item-row label="時間">
-                    <n-input placeholder="起-終(ex:08-20/14-20/20-08)" v-model:value="newProject.time" />
-                </n-form-item-row>
-                <n-form-item-row label="屬性">
-                    <n-tag type="warning" >
-                    {{ newProject.charactor }}
-                    </n-tag>
-                    <n-select v-model:value="newProject.charactor" :options="options" />
+                <n-form-item-row label="描述">
+                    <n-input placeholder="詳細減班項目描述" v-model:value="newProject.description" />
                 </n-form-item-row>
                 <div v-if="errors.length" class="mb-6 py-4 px-6 bg-rose-400 rounded-xl">
                     <p v-for="error in errors" :key="error">

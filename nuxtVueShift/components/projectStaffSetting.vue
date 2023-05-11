@@ -287,11 +287,6 @@ onMounted(() => {
                     </tr>
                 </tbody>
             </table>
-            {{resultAllRules}}
-            ----
-            {{ resultAlldescription }}
-
-            {{ resultRules }}
         </n-tab-pane>
         <n-tab-pane name="rulesGet" tab="所有人員規則一覽">
             <table class="table-auto min-w-full">

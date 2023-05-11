@@ -17,6 +17,9 @@ onMounted(() => {
             <n-tab-pane name="allGroup" tab="填班組別">
                 <Groupname />
             </n-tab-pane>
+            <n-tab-pane name="allPositionCharactor" tab="班種性質設定">
+                <PositionCharactor />
+            </n-tab-pane>
             <n-tab-pane name="allPosition" tab="班種總覽">
                 <PositionProjects />
             </n-tab-pane>

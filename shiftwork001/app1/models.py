@@ -82,13 +82,23 @@ class Table_date(models.Model):
 
         super().save(*args, **kwargs)
 
+class Table_shift_charactor(models.Model):
+    id = models.AutoField(primary_key=True,verbose_name='ID')
+    name = models.CharField(max_length=10,verbose_name='性質代碼')
+    charactor_time = models.CharField(max_length=5,verbose_name='白夜班')
+    charactor_position = models.CharField(max_length=5,verbose_name='位置')
+    def __str__(self):
+        return str(self.id)+self.charactor_class
+
 class Table_shift(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')
     name = models.CharField(max_length=100,verbose_name='班別名稱')
     time = models.CharField(max_length=100,verbose_name='班別時間')
-    charactor = models.CharField(max_length=5,verbose_name='白夜班')
+    charactor = models.ForeignKey(Table_shift_charactor,on_delete=models.CASCADE,verbose_name='班別性質',null=True)
+    # models.CharField(max_length=5,verbose_name='白夜班',null=True)
+    # charactor_new = models.ForeignKey(Table_shift_charactor,on_delete=models.CASCADE,verbose_name='班別性質',null=True)
     def __str__(self):
-        return str(self.id)+self.name+self.time+self.charactor
+        return str(self.id)+self.name+self.time+self.charactor.name
 
 class Table_project(models.Model):
     id = models.AutoField(primary_key=True,verbose_name='ID')

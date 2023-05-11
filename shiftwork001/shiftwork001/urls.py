@@ -38,6 +38,8 @@ urlpatterns = [
     path('api/project/<pk>/', views.projectDetailGenericView.as_view()),
     path('api/date/', views.dateGenericView.as_view()),
     path('api/date/<pk>/', views.dateDetailGenericView.as_view()),
+    path('api/shiftCharactor/', views.shiftCharactorGenericView.as_view()),
+    path('api/shiftCharactor/<pk>/', views.shiftCharactorDetailGenericView.as_view()),
     path('api/shift/', views.shiftGenericView.as_view()),
     path('api/shift/<pk>/', views.shiftDetailGenericView.as_view()),
     path('api/groupname/', views.groupnameGeneraicView.as_view()),
@@ -61,6 +63,7 @@ urlpatterns = [
     path('api/staffExtra/<pk>/', views.staffExtraDetailGenericView.as_view()),
     path('api/staffRelax/', views.staffRelaxGenericView.as_view()),
     path('api/staffRelax/<pk>/', views.staffRelaxDetailGenericView.as_view()),
+
     
 
 

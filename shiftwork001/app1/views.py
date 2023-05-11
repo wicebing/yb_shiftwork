@@ -153,15 +153,15 @@ class projectShiftScheduleStatisticsView(APIView):
     def get_shift_schedule_statistics(self, queryset):
         total_count = queryset.count()
         # Get the value count for character
-        character_count = queryset.values("shift__charactor").annotate(count=Count("shift__charactor")).order_by("shift__charactor")
-
+        character_count = queryset.values("shift__charactor__name").annotate(count=Count("shift__charactor__name")).order_by("shift__charactor__name")
+        print(character_count)
         # Get the value count for holiday
         holiday_count = queryset.values("date__holiday").annotate(count=Count("date__holiday")).order_by("date__holiday")
 
         # Get the value count for name
         name_count = queryset.values("shift__name").annotate(count=Count("shift__name")).order_by("shift__name")
 
-        intersection_counts = queryset.values("shift__charactor", "date__holiday",).annotate(count=Count("id")).order_by("shift__charactor", "date__holiday")
+        intersection_counts = queryset.values("shift__charactor__name", "date__holiday",).annotate(count=Count("id")).order_by("shift__charactor__name", "date__holiday")
 
         # Combine the counts into a single dictionary
         statistics = {
@@ -231,6 +231,19 @@ class shiftGenericView(generics.ListCreateAPIView):
     filter_fields = ('charactor','name',)
     ordering_fields = ('id','name','charactor','time')
     search_fields = ('name','charactor','time',)
+
+class shiftCharactorGenericView(generics.ListCreateAPIView):
+    queryset = Table_shift_charactor.objects.all().order_by('name')
+    serializer_class = Table_shift_charactor_Serializer
+    permission_classes = (permissions.IsAuthenticated, )
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
+    ordering_fields = ('id','name')
+
+class shiftCharactorDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Table_shift_charactor.objects.all()
+    serializer_class = Table_shift_charactor_Serializer
+    permission_classes = (IsOwnerOrAdmin,permissions.IsAdminUser,)
+    authentication_classes = (JWTAuthentication,SessionAuthentication,)
 
 class shiftDetailGenericView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Table_shift.objects.all()

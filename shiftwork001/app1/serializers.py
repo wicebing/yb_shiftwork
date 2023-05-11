@@ -111,11 +111,22 @@ class Table_date_Serializer(serializers.ModelSerializer):
         if Table_date.objects.filter(date=value).exists():
             raise serializers.ValidationError("日期已存在")
         return value
-    
+
+class Table_shift_charactor_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table_shift_charactor
+        fields = '__all__'
+    def validate_name(self, value):
+        if Table_shift_charactor.objects.filter(name=value).exists():
+            raise serializers.ValidationError("班別類型已存在")
+        return value    
+
 class Table_shift_Serializer(serializers.ModelSerializer):
+    charactor_name = serializers.CharField(source='charactor.name')
     class Meta:
         model = Table_shift
         fields = '__all__'
+        extra_fields = ['charactor_name', ]
     def validate_name(self, value):
         if Table_shift.objects.filter(name=value).exists():
             raise serializers.ValidationError("班種名稱已存在")
