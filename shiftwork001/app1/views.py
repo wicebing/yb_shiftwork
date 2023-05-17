@@ -119,7 +119,10 @@ class projectShiftScheduleGenericView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         project_id = self.request.query_params.get('project_id', None)
-        queryset = Table_Shift_Schedule.objects.all().order_by('date','shift' )
+        queryset = Table_Shift_Schedule.objects.all().order_by('date',
+                                                               'shift__time',
+                                                               'shift__charactor__charactor_position',
+                                                               )
 
         if project_id is not None:
             project_instance = get_object_or_404(Table_project, id=project_id)
@@ -231,6 +234,9 @@ class shiftGenericView(generics.ListCreateAPIView):
     filter_fields = ('charactor','name',)
     ordering_fields = ('id','name','charactor','time')
     search_fields = ('name','charactor','time',)
+
+    def get_queryset(self):
+        return Table_shift.objects.all().order_by('time','charactor__charactor_position','name')
 
 class shiftCharactorGenericView(generics.ListCreateAPIView):
     queryset = Table_shift_charactor.objects.all().order_by('name')
